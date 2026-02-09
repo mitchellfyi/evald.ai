@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_09_051407) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_10_030000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -26,6 +26,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_09_051407) do
     t.datetime "verified_at"
     t.index ["agent_id"], name: "index_agent_claims_on_agent_id"
     t.index ["user_id"], name: "index_agent_claims_on_user_id"
+  end
+
+  create_table "agent_interactions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "interaction_type", null: false
+    t.text "notes"
+    t.string "outcome", null: false
+    t.bigint "reporter_agent_id", null: false
+    t.decimal "reporter_score_at_time", precision: 5, scale: 2
+    t.boolean "success", default: false, null: false
+    t.bigint "target_agent_id", null: false
+    t.decimal "target_score_at_time", precision: 5, scale: 2
+    t.datetime "updated_at", null: false
+    t.index ["interaction_type"], name: "index_agent_interactions_on_interaction_type"
+    t.index ["reporter_agent_id", "target_agent_id"], name: "idx_interactions_reporter_target"
+    t.index ["reporter_agent_id"], name: "index_agent_interactions_on_reporter_agent_id"
+    t.index ["target_agent_id"], name: "index_agent_interactions_on_target_agent_id"
   end
 
   create_table "agent_scores", force: :cascade do |t|
@@ -60,6 +77,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_09_051407) do
   end
 
   create_table "agents", force: :cascade do |t|
+    t.string "api_endpoint"
+    t.string "api_key"
     t.string "builder_name"
     t.string "builder_url"
     t.string "category"
@@ -202,6 +221,29 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_09_051407) do
     t.index ["tier"], name: "index_evaluations_on_tier"
   end
 
+  create_table "pending_agents", force: :cascade do |t|
+    t.integer "confidence_score"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.datetime "discovered_at"
+    t.string "github_url", null: false
+    t.string "language"
+    t.string "license"
+    t.string "name", null: false
+    t.string "owner"
+    t.text "rejection_reason"
+    t.datetime "reviewed_at"
+    t.bigint "reviewed_by_id"
+    t.integer "stars"
+    t.string "status", default: "pending", null: false
+    t.jsonb "topics", default: []
+    t.datetime "updated_at", null: false
+    t.index ["confidence_score"], name: "index_pending_agents_on_confidence_score"
+    t.index ["github_url"], name: "index_pending_agents_on_github_url", unique: true
+    t.index ["reviewed_by_id"], name: "index_pending_agents_on_reviewed_by_id"
+    t.index ["status"], name: "index_pending_agents_on_status"
+  end
+
   create_table "roles", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name"
@@ -309,8 +351,45 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_09_051407) do
     t.index ["user_id"], name: "index_users_roles_on_user_id"
   end
 
+  create_table "webhook_deliveries", force: :cascade do |t|
+    t.integer "attempt_count", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.text "error_message"
+    t.string "event_type", null: false
+    t.datetime "next_retry_at"
+    t.jsonb "payload", default: {}
+    t.text "response_body"
+    t.integer "response_code"
+    t.string "status", default: "pending"
+    t.datetime "updated_at", null: false
+    t.bigint "webhook_endpoint_id", null: false
+    t.index ["next_retry_at"], name: "index_webhook_deliveries_on_next_retry_at"
+    t.index ["status"], name: "index_webhook_deliveries_on_status"
+    t.index ["webhook_endpoint_id", "created_at"], name: "index_webhook_deliveries_on_webhook_endpoint_id_and_created_at"
+    t.index ["webhook_endpoint_id"], name: "index_webhook_deliveries_on_webhook_endpoint_id"
+  end
+
+  create_table "webhook_endpoints", force: :cascade do |t|
+    t.bigint "agent_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "disabled_at"
+    t.boolean "enabled", default: true
+    t.string "events", default: [], array: true
+    t.integer "failure_count", default: 0
+    t.datetime "last_triggered_at"
+    t.string "secret"
+    t.datetime "updated_at", null: false
+    t.string "url", null: false
+    t.index ["agent_id", "enabled"], name: "index_webhook_endpoints_on_agent_id_and_enabled"
+    t.index ["agent_id"], name: "index_webhook_endpoints_on_agent_id"
+    t.index ["url"], name: "index_webhook_endpoints_on_url"
+  end
+
   add_foreign_key "agent_claims", "agents"
   add_foreign_key "agent_claims", "users"
+  add_foreign_key "agent_interactions", "agents", column: "reporter_agent_id"
+  add_foreign_key "agent_interactions", "agents", column: "target_agent_id"
   add_foreign_key "agent_scores", "agents"
   add_foreign_key "agent_telemetry_stats", "agents"
   add_foreign_key "agents", "users", column: "claimed_by_user_id"
@@ -321,9 +400,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_09_051407) do
   add_foreign_key "eval_runs", "agents"
   add_foreign_key "eval_runs", "eval_tasks"
   add_foreign_key "evaluations", "agents"
+  add_foreign_key "pending_agents", "users", column: "reviewed_by_id"
   add_foreign_key "safety_scores", "agents"
   add_foreign_key "security_audits", "agents"
   add_foreign_key "security_certifications", "agents"
   add_foreign_key "security_scans", "agents"
   add_foreign_key "telemetry_events", "agents"
+  add_foreign_key "webhook_deliveries", "webhook_endpoints"
+  add_foreign_key "webhook_endpoints", "agents"
 end

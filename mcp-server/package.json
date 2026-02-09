@@ -1,0 +1,27 @@
+{
+  "name": "evald-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Evald AI trust registry - query agent trust scores from any MCP-compatible client",
+  "main": "index.js",
+  "bin": {
+    "evald-mcp-server": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai-agents",
+    "trust-score",
+    "evald"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mitchellfyi/evald.ai"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

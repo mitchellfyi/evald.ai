@@ -10,6 +10,8 @@ class Agent < ApplicationRecord
   has_many :security_audits, dependent: :destroy
   has_many :security_certifications, dependent: :destroy
   has_many :webhook_endpoints, dependent: :destroy
+  has_many :reported_interactions, class_name: "AgentInteraction", foreign_key: :reporter_agent_id, dependent: :destroy, inverse_of: :reporter_agent
+  has_many :received_interactions, class_name: "AgentInteraction", foreign_key: :target_agent_id, dependent: :destroy, inverse_of: :target_agent
   belongs_to :claimed_by_user, class_name: "User", optional: true
 
   validates :name, presence: true
