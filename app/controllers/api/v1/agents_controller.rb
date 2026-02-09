@@ -51,18 +51,27 @@ module Api
         end
 
         # Order by domain score if domain filter provided
-        if params[:domain].present? && Agent::DOMAINS.include?(params[:domain])
-          # Safe: domain validated against DOMAINS constant whitelist
-          domain_column = Agent::DOMAIN_SCORE_COLUMNS[params[:domain]]
-          agents = agents.order(Arel.sql("#{domain_column} DESC NULLS LAST"))
-        else
-          agents = agents.order(score: :desc)
-        end
+        domain_order = safe_domain_order_clause(params[:domain])
+        agents = if domain_order
+                   agents.order(Arel.sql(domain_order))
+                 else
+                   agents.order(score: :desc)
+                 end
 
         render json: agents.limit(20).map { |a| agent_summary(a) }
       end
 
       private
+
+      # Explicit whitelist for domain score columns - prevents SQL injection
+      # Brakeman requires explicit case statements to recognize safe patterns
+      def safe_domain_order_clause(domain)
+        case domain
+        when "coding" then "coding_score DESC NULLS LAST"
+        when "research" then "research_score DESC NULLS LAST"
+        when "workflow" then "workflow_score DESC NULLS LAST"
+        end
+      end
 
       def agent_summary(agent)
         {
