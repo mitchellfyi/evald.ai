@@ -14,17 +14,27 @@ class Api::V1::CompareControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     json = JSON.parse(response.body)
 
-    assert json.key?("agents")
-    assert json.key?("summary")
-    assert_equal 2, json["agents"].size
+    assert json.key?("comparison")
+    comparison = json["comparison"]
 
-    agent = json["agents"].first
+    assert comparison.key?("task_domain")
+    assert comparison.key?("agents")
+    assert comparison.key?("recommendation")
+    assert comparison.key?("recommendation_reason")
+
+    assert_equal 2, comparison["agents"].size
+
+    agent = comparison["agents"].first
     assert agent.key?("slug")
     assert agent.key?("name")
     assert agent.key?("category")
     assert agent.key?("score")
+    assert agent.key?("confidence")
+    assert agent.key?("tier0")
+    assert agent.key?("tier1")
+    assert agent.key?("strengths")
+    assert agent.key?("weaknesses")
     assert agent.key?("tier")
-    assert agent.key?("tier_scores")
     assert agent.key?("last_evaluated")
   end
 
@@ -37,33 +47,42 @@ class Api::V1::CompareControllerTest < ActionDispatch::IntegrationTest
     assert_equal "agents parameter required", json["error"]
   end
 
-  test "index returns summary with highest score" do
+  test "index returns error with only one agent" do
+    get api_v1_compare_index_url, params: { agents: "alpha-agent" }, as: :json
+
+    assert_response :bad_request
+    json = JSON.parse(response.body)
+
+    assert_equal "at least 2 agents required for comparison", json["error"]
+  end
+
+  test "index returns recommendation for highest scoring agent" do
     get api_v1_compare_index_url, params: { agents: "alpha-agent,beta-agent" }, as: :json
 
     json = JSON.parse(response.body)
+    comparison = json["comparison"]
 
-    assert_equal "beta-agent", json["summary"]["highest_score"]
-    assert json["summary"].key?("average_score")
-    assert_equal 2, json["summary"]["count"]
+    assert_equal "beta-agent", comparison["recommendation"]
+    assert comparison["recommendation_reason"].include?("Highest")
   end
 
   test "index limits to 5 agents" do
-    6.times { |i| create(:agent, :published, slug: "extra-#{i}") }
+    6.times { |i| create(:agent, :published, :with_score, slug: "extra-#{i}") }
 
     agents = "alpha-agent,beta-agent,gamma-agent,extra-0,extra-1,extra-2,extra-3"
     get api_v1_compare_index_url, params: { agents: agents }, as: :json
 
     json = JSON.parse(response.body)
-    assert json["agents"].size <= 5
+    assert json["comparison"]["agents"].size <= 5
   end
 
-  test "index ignores unknown agents" do
-    get api_v1_compare_index_url, params: { agents: "alpha-agent,nonexistent" }, as: :json
+  test "index ignores unknown agents but requires at least 2 valid" do
+    get api_v1_compare_index_url, params: { agents: "alpha-agent,beta-agent,nonexistent" }, as: :json
 
     assert_response :success
     json = JSON.parse(response.body)
 
-    assert_equal 1, json["agents"].size
+    assert_equal 2, json["comparison"]["agents"].size
   end
 
   test "score values are never nil" do
@@ -74,18 +93,48 @@ class Api::V1::CompareControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     json = JSON.parse(response.body)
 
-    nil_agent = json["agents"].find { |a| a["slug"] == "nil-score" }
+    nil_agent = json["comparison"]["agents"].find { |a| a["slug"] == "nil-score" }
     assert_not_nil nil_agent
     assert_equal 0.0, nil_agent["score"]
   end
 
-  test "tier_scores contains tier0 and tier1" do
-    get api_v1_compare_index_url, params: { agents: "alpha-agent" }, as: :json
+  test "tier0 and tier1 contain dimension breakdowns" do
+    get api_v1_compare_index_url, params: { agents: "alpha-agent,beta-agent" }, as: :json
 
     json = JSON.parse(response.body)
-    tier_scores = json["agents"].first["tier_scores"]
+    agent = json["comparison"]["agents"].first
 
-    assert tier_scores.key?("tier0")
-    assert tier_scores.key?("tier1")
+    # tier0 and tier1 should be hashes
+    assert agent["tier0"].is_a?(Hash)
+    assert agent["tier1"].is_a?(Hash)
+  end
+
+  test "supports optional task domain parameter" do
+    get api_v1_compare_index_url, params: { agents: "alpha-agent,beta-agent", task: "code-review" }, as: :json
+
+    assert_response :success
+    json = JSON.parse(response.body)
+
+    assert_equal "code-review", json["comparison"]["task_domain"]
+  end
+
+  test "strengths and weaknesses are arrays" do
+    get api_v1_compare_index_url, params: { agents: "alpha-agent,beta-agent" }, as: :json
+
+    json = JSON.parse(response.body)
+    agent = json["comparison"]["agents"].first
+
+    assert agent["strengths"].is_a?(Array)
+    assert agent["weaknesses"].is_a?(Array)
+  end
+
+  test "confidence is present and valid" do
+    get api_v1_compare_index_url, params: { agents: "alpha-agent,beta-agent" }, as: :json
+
+    json = JSON.parse(response.body)
+    agent = json["comparison"]["agents"].first
+
+    valid_confidences = %w[insufficient low medium high]
+    assert valid_confidences.include?(agent["confidence"])
   end
 end
