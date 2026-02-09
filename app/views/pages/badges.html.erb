@@ -1,0 +1,156 @@
+<% content_for :title, "Badge Embeds - Evald.ai" %>
+<% content_for :description, "Add Evald trust score badges to your README. Show your agent's evaluation score with shields.io-style SVG badges." %>
+
+<div class="max-w-3xl mx-auto">
+  <h1 class="text-4xl font-bold text-gray-900 mb-4">Badge Embeds</h1>
+  <p class="text-lg text-gray-600 mb-8">
+    Add an Evald trust score badge to your README to showcase your agent's evaluation. Badges update automatically and are cached for performance.
+  </p>
+
+  <div class="space-y-8">
+    <!-- Basic Usage -->
+    <div class="bg-white rounded-xl p-6 shadow">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Basic Usage</h2>
+      <p class="text-gray-600 mb-4">
+        Replace <code class="bg-gray-100 px-2 py-1 rounded text-sm">your-agent-slug</code> with your agent's slug from the Evald registry.
+      </p>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">Markdown</h3>
+      <div class="bg-gray-50 rounded-lg p-4 mb-4">
+        <code class="text-sm text-gray-700 break-all">[![Evald Score](https://evald.ai/badge/your-agent-slug)](https://evald.ai/agents/your-agent-slug)</code>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 mb-2">HTML</h3>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <code class="text-sm text-gray-700 break-all">&lt;a href="https://evald.ai/agents/your-agent-slug"&gt;&lt;img src="https://evald.ai/badge/your-agent-slug" alt="Evald Score"&gt;&lt;/a&gt;</code>
+      </div>
+    </div>
+
+    <!-- Style Variants -->
+    <div class="bg-white rounded-xl p-6 shadow">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Style Variants</h2>
+      <div class="space-y-4">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-1">Flat (default)</h3>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <code class="text-sm text-gray-700 break-all">![Evald Score](https://evald.ai/badge/your-agent-slug?style=flat)</code>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-1">Flat Square</h3>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <code class="text-sm text-gray-700 break-all">![Evald Score](https://evald.ai/badge/your-agent-slug?style=flat-square)</code>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-1">Plastic</h3>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <code class="text-sm text-gray-700 break-all">![Evald Score](https://evald.ai/badge/your-agent-slug?style=plastic)</code>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-1">For the Badge</h3>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <code class="text-sm text-gray-700 break-all">![Evald Score](https://evald.ai/badge/your-agent-slug?style=for-the-badge)</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Parameters -->
+    <div class="bg-white rounded-xl p-6 shadow">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Parameters</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="border-b border-gray-200">
+              <th class="text-left py-2 pr-4 font-semibold text-gray-800">Parameter</th>
+              <th class="text-left py-2 pr-4 font-semibold text-gray-800">Values</th>
+              <th class="text-left py-2 font-semibold text-gray-800">Description</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-600">
+            <tr class="border-b border-gray-100">
+              <td class="py-2 pr-4"><code class="bg-gray-100 px-1 rounded">style</code></td>
+              <td class="py-2 pr-4"><code class="bg-gray-100 px-1 rounded">flat</code>, <code class="bg-gray-100 px-1 rounded">flat-square</code>, <code class="bg-gray-100 px-1 rounded">plastic</code>, <code class="bg-gray-100 px-1 rounded">for-the-badge</code></td>
+              <td class="py-2">Badge visual style (default: flat)</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-2 pr-4"><code class="bg-gray-100 px-1 rounded">type</code></td>
+              <td class="py-2 pr-4"><code class="bg-gray-100 px-1 rounded">score</code>, <code class="bg-gray-100 px-1 rounded">tier</code>, <code class="bg-gray-100 px-1 rounded">safety</code>, <code class="bg-gray-100 px-1 rounded">certification</code></td>
+              <td class="py-2">Badge type (default: score)</td>
+            </tr>
+            <tr class="border-b border-gray-100">
+              <td class="py-2 pr-4"><code class="bg-gray-100 px-1 rounded">label</code></td>
+              <td class="py-2 pr-4">Any text</td>
+              <td class="py-2">Custom label text (e.g., <code class="bg-gray-100 px-1 rounded">trust+score</code>)</td>
+            </tr>
+            <tr>
+              <td class="py-2 pr-4"><code class="bg-gray-100 px-1 rounded">tier</code></td>
+              <td class="py-2 pr-4"><code class="bg-gray-100 px-1 rounded">0</code>, <code class="bg-gray-100 px-1 rounded">1</code></td>
+              <td class="py-2">Show score for a specific evaluation tier</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Custom Label -->
+    <div class="bg-white rounded-xl p-6 shadow">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Custom Label</h2>
+      <p class="text-gray-600 mb-4">Use the <code class="bg-gray-100 px-2 py-1 rounded text-sm">label</code> parameter to set a custom badge label. Use <code class="bg-gray-100 px-2 py-1 rounded text-sm">+</code> for spaces.</p>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <code class="text-sm text-gray-700 break-all">![Trust Score](https://evald.ai/badge/your-agent-slug?label=trust+score)</code>
+      </div>
+    </div>
+
+    <!-- Tier-Specific Scores -->
+    <div class="bg-white rounded-xl p-6 shadow">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Tier-Specific Scores</h2>
+      <p class="text-gray-600 mb-4">Show scores for a specific evaluation tier.</p>
+      <div class="space-y-3">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-1">Tier 0 (Passive Signals)</h3>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <code class="text-sm text-gray-700 break-all">![Tier 0](https://evald.ai/badge/your-agent-slug?tier=0)</code>
+          </div>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-gray-800 mb-1">Tier 1 (Task Completion)</h3>
+          <div class="bg-gray-50 rounded-lg p-4">
+            <code class="text-sm text-gray-700 break-all">![Tier 1](https://evald.ai/badge/your-agent-slug?tier=1)</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Color Coding -->
+    <div class="bg-white rounded-xl p-6 shadow">
+      <h2 class="text-2xl font-bold text-gray-900 mb-4">Score Color Coding</h2>
+      <div class="space-y-2">
+        <div class="flex items-center space-x-3">
+          <span class="w-4 h-4 rounded" style="background-color: #4c1;"></span>
+          <span class="text-gray-700"><strong>Green</strong> — 80–100 (Excellent)</span>
+        </div>
+        <div class="flex items-center space-x-3">
+          <span class="w-4 h-4 rounded" style="background-color: #97ca00;"></span>
+          <span class="text-gray-700"><strong>Yellow-green</strong> — 60–79 (Good)</span>
+        </div>
+        <div class="flex items-center space-x-3">
+          <span class="w-4 h-4 rounded" style="background-color: #dfb317;"></span>
+          <span class="text-gray-700"><strong>Yellow</strong> — 40–59 (Moderate)</span>
+        </div>
+        <div class="flex items-center space-x-3">
+          <span class="w-4 h-4 rounded" style="background-color: #fe7d37;"></span>
+          <span class="text-gray-700"><strong>Orange</strong> — 20–39 (Poor)</span>
+        </div>
+        <div class="flex items-center space-x-3">
+          <span class="w-4 h-4 rounded" style="background-color: #e05d44;"></span>
+          <span class="text-gray-700"><strong>Red</strong> — 0–19 (Critical)</span>
+        </div>
+        <div class="flex items-center space-x-3">
+          <span class="w-4 h-4 rounded" style="background-color: #9f9f9f;"></span>
+          <span class="text-gray-700"><strong>Grey</strong> — No data available</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

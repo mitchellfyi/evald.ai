@@ -41,4 +41,20 @@ class BadgesControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.headers["Cache-Control"], "public"
     assert_includes response.headers["Cache-Control"], "max-age=3600"
   end
+
+  test "show accepts flat-square style" do
+    get badge_agent_path(@agent, style: "flat-square")
+    assert_response :success
+  end
+
+  test "show accepts custom label" do
+    get badge_agent_path(@agent, label: "trust score")
+    assert_response :success
+    assert_includes response.body, "trust score"
+  end
+
+  test "show accepts tier parameter" do
+    get badge_agent_path(@agent, tier: "0")
+    assert_response :success
+  end
 end

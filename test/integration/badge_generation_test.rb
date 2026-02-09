@@ -154,4 +154,53 @@ class BadgeGenerationTest < ActionDispatch::IntegrationTest
     # Should escape XML special characters
     assert_not_includes response.body, "<Test>"
   end
+
+  # === Flat-Square Style Tests ===
+
+  test "should generate flat-square style badge" do
+    get agent_badge_path(agent_name: @agent.name), params: { style: "flat-square" }
+    assert_response :success
+    assert_includes response.body, "<svg"
+    # flat-square has no rounded corners or gradients
+    assert_not_includes response.body, "linearGradient"
+  end
+
+  # === Custom Label Tests ===
+
+  test "should use custom label when provided" do
+    get agent_badge_path(agent_name: @agent.name), params: { label: "trust score" }
+    assert_response :success
+    assert_includes response.body, "trust score"
+  end
+
+  # === Tier Parameter Tests ===
+
+  test "should show tier 0 score when tier=0" do
+    get agent_badge_path(agent_name: @agent.name), params: { tier: "0" }
+    assert_response :success
+    assert_includes response.body, "<svg"
+  end
+
+  test "should show N/A for tier 1 when no tier 1 data" do
+    get agent_badge_path(agent_name: @agent.name), params: { tier: "1" }
+    assert_response :success
+    assert_includes response.body, "N/A"
+  end
+
+  # === No Data (Grey) Tests ===
+
+  test "should show grey badge for agent with nil score" do
+    @agent.update!(score: nil, score_at_eval: nil, last_verified_at: nil)
+    get agent_badge_path(agent_name: @agent.name)
+    assert_response :success
+    assert_includes response.body, "#9f9f9f"
+    assert_includes response.body, "N/A"
+  end
+
+  # === Badge Documentation Page ===
+
+  test "should render badge documentation page" do
+    get badges_path
+    assert_response :success
+  end
 end

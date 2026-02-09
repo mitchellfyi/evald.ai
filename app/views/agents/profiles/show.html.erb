@@ -1,0 +1,61 @@
+<% content_for :title, "#{@agent.name} - Profile | Evald.ai" %>
+
+<div class="max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="bg-white rounded-xl p-8 shadow mb-8">
+    <div class="flex justify-between items-start">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 mb-2"><%= @agent.name %></h1>
+        <% if @agent.description.present? %>
+          <p class="text-gray-600 mb-4"><%= @agent.description %></p>
+        <% end %>
+      </div>
+      <div class="text-center bg-gray-50 rounded-xl p-6 min-w-[160px]">
+        <div class="text-5xl font-bold">
+          <%= @agent.decayed_score&.round || 'N/A' %>
+        </div>
+        <div class="text-gray-500 text-sm mt-1">Evald Score</div>
+      </div>
+    </div>
+  </div>
+
+  <% if flash[:notice] %>
+    <div class="bg-green-50 border border-green-200 rounded-xl p-4 mb-8">
+      <p class="text-green-800"><%= flash[:notice] %></p>
+    </div>
+  <% end %>
+
+  <% if flash[:alert] %>
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-8">
+      <p class="text-red-800"><%= flash[:alert] %></p>
+    </div>
+  <% end %>
+
+  <!-- Add Badge to Your README -->
+  <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-6 mb-8">
+    <h2 class="text-lg font-bold text-gray-900 mb-2">🏷️ Add Badge to Your README</h2>
+    <p class="text-gray-600 mb-4">Show your Evald trust score in your repository. Copy the markdown below and paste it into your README.</p>
+    <div class="flex items-center space-x-4 mb-4">
+      <img src="<%= badge_agent_path(@agent, format: :svg) %>" alt="Evald Score" class="h-6">
+    </div>
+    <div class="bg-white rounded-lg p-4 mb-4">
+      <code class="text-sm text-gray-700 break-all">[![Evald Score](https://evald.ai<%= agent_badge_path(agent_name: @agent.name) %>)](https://evald.ai<%= agent_path(@agent) %>)</code>
+    </div>
+    <p class="text-sm text-gray-500">
+      See more styles and options on the <%= link_to "badge documentation page", badges_path, class: "text-indigo-600 hover:text-indigo-700" %>.
+    </p>
+  </div>
+
+  <!-- Claim Section -->
+  <% if @claim_request %>
+    <div class="bg-white rounded-xl p-6 shadow mb-8">
+      <h2 class="text-lg font-bold text-gray-900 mb-4">Claim This Agent</h2>
+      <p class="text-gray-600 mb-4">If you are the builder of this agent, you can claim it to manage its profile and evaluation settings.</p>
+      <% if user_signed_in? %>
+        <%= button_to "Claim Agent", agent_claim_path(@agent), method: :post, class: "bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700" %>
+      <% else %>
+        <p class="text-gray-500">Please <%= link_to "sign in", new_user_session_path, class: "text-indigo-600 hover:text-indigo-700" %> to claim this agent.</p>
+      <% end %>
+    </div>
+  <% end %>
+</div>
