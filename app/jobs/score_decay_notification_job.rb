@@ -6,7 +6,7 @@ class ScoreDecayNotificationJob < ApplicationJob
   queue_as :default
 
   # Threshold at which to notify owners (percentage of original score retained)
-  NOTIFICATION_THRESHOLDS = [90, 80, 70, 60, 50].freeze
+  NOTIFICATION_THRESHOLDS = [ 90, 80, 70, 60, 50 ].freeze
 
   # Minimum days between notifications for the same agent
   NOTIFICATION_COOLDOWN_DAYS = 7

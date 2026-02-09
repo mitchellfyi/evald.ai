@@ -16,8 +16,17 @@ Rails.application.routes.draw do
     member do
       get :badge, to: "badges#show", defaults: { format: :svg }
     end
+
+    # Agent profiles and claiming
+    resource :profile, only: [ :show ], controller: "agents/profiles"
+    resource :claim, only: [ :create ], controller: "agents/claims" do
+      post :verify, on: :member
+    end
   end
   get "compare", to: "agents#compare"
+
+  # Public badge endpoint (for README embeds)
+  get "badge/:agent_name", to: "badges#show", as: :agent_badge
 
   # API v1
   namespace :api do
@@ -37,6 +46,13 @@ Rails.application.routes.draw do
       # Standalone comparison and search endpoints
       resources :compare, only: [ :index ]
       resources :search, only: [ :index ]
+
+      # CI/CD deploy gate
+      resources :deploy_gates, only: [] do
+        collection do
+          post :check
+        end
+      end
     end
   end
 

@@ -1,27 +1,39 @@
+# frozen_string_literal: true
+
 class BadgesController < ApplicationController
+  skip_before_action :verify_authenticity_token, only: [ :show ]
+
+  VALID_STYLES = %w[flat plastic for-the-badge].freeze
+  VALID_TYPES = %w[score tier safety certification].freeze
+
   def show
-    @agent = Agent.find_by!(slug: params[:agent_id])
+    agent = Agent.find_by(name: params[:agent_name])
 
-    # Cache for 1 hour
-    expires_in 1.hour, public: true
-
-    respond_to do |format|
-      format.svg { render layout: false, content_type: "image/svg+xml" }
-      format.png { redirect_to shields_io_url }
+    unless agent
+      return render plain: not_found_svg, content_type: "image/svg+xml", status: :not_found
     end
+
+    style = params[:style].to_s.downcase
+    style = "flat" unless VALID_STYLES.include?(style)
+
+    badge_type = params[:type].to_s.downcase
+    badge_type = "score" unless VALID_TYPES.include?(badge_type)
+
+    svg = BadgeGenerator.generate_svg(agent, type: badge_type, style: style)
+
+    set_cache_headers
+    render plain: svg, content_type: "image/svg+xml"
   end
 
   private
 
-  def shields_io_url
-    score = @agent.decayed_score || "N/A"
-    color = @agent.badge_color
-    label = params[:label] || "evaled"
-
-    "https://img.shields.io/badge/#{label}-#{score}-#{color}?style=#{badge_style}"
+  def set_cache_headers
+    expires_in 1.hour, public: true
+    response.headers["Cache-Control"] = "public, max-age=3600, s-maxage=3600"
+    response.headers["Surrogate-Control"] = "max-age=86400"
   end
 
-  def badge_style
-    params[:style] || "flat"
+  def not_found_svg
+    BadgeGenerator.generate_error_svg("Agent Not Found")
   end
 end

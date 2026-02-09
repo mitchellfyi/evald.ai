@@ -1,0 +1,97 @@
+# Evaled.ai Deploy Gate - GitHub Action Template
+#
+# This workflow checks agent scores on evaled.ai before deployment.
+# Add this to your .github/workflows/ directory.
+#
+# Requirements:
+#   - Set EVALED_API_KEY secret in your repository settings (optional, for authenticated requests)
+#
+# Usage:
+#   1. Copy this file to .github/workflows/evaled-deploy-gate.yml
+#   2. Customize the agent slugs and min_score threshold
+#   3. Add as a required check before deployment
+
+name: Evaled Deploy Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  EVALED_API_URL: https://evaled.ai/api/v1
+
+jobs:
+  check-agent-scores:
+    name: Check Agent Scores
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check Evaled Scores
+        id: evaled-check
+        run: |
+          # Configure your agents and minimum score here
+          AGENTS='["your-agent-slug", "another-agent-slug"]'
+          MIN_SCORE=70
+
+          echo "Checking agent scores on evaled.ai..."
+          echo "Agents: $AGENTS"
+          echo "Minimum Score: $MIN_SCORE"
+
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.EVALED_API_KEY }}" \
+            -d "{\"agents\": $AGENTS, \"min_score\": $MIN_SCORE}" \
+            "$EVALED_API_URL/deploy_gates/check")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "Response: $BODY"
+          echo "HTTP Status: $HTTP_CODE"
+
+          # Parse the response
+          PASS=$(echo "$BODY" | jq -r '.pass')
+          SUMMARY=$(echo "$BODY" | jq -r '.summary')
+
+          echo "pass=$PASS" >> $GITHUB_OUTPUT
+          echo "summary=$SUMMARY" >> $GITHUB_OUTPUT
+
+          if [ "$PASS" != "true" ]; then
+            echo "❌ Deploy gate check failed: $SUMMARY"
+            echo ""
+            echo "Agent Details:"
+            echo "$BODY" | jq -r '.agents[] | "  - \(.agent): \(.score) (\(if .pass then "✓" else "✗" end))"'
+            exit 1
+          fi
+
+          echo "✅ Deploy gate check passed: $SUMMARY"
+
+      - name: Post Results
+        if: always()
+        run: |
+          echo "## Evaled Deploy Gate Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.evaled-check.outputs.pass }}" == "true" ]; then
+            echo "✅ **Passed**: ${{ steps.evaled-check.outputs.summary }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Failed**: ${{ steps.evaled-check.outputs.summary }}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Example: Gate your deployment behind the score check
+  deploy:
+    name: Deploy
+    needs: check-agent-scores
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy
+        run: |
+          echo "Deploying... (agent scores verified ✓)"
+          # Add your deployment commands here
