@@ -117,6 +117,17 @@ module Tier0
     private
 
     def stub_all_github_apis
+      # Stub base repo endpoint (for CommunitySignalAnalyzer)
+      repo_data = {
+        name: "testrepo",
+        full_name: "testowner/testrepo",
+        stargazers_count: 100,
+        forks_count: 20,
+        open_issues_count: 5
+      }
+      stub_request(:get, %r{api.github.com/repos/[^/]+/[^/]+$})
+        .to_return(status: 200, body: repo_data.to_json, headers: { "Content-Type" => "application/json" })
+
       # Stub commits
       commits = 50.times.map do |i|
         { sha: SecureRandom.hex(20), commit: { committer: { date: 5.days.ago.iso8601 }, message: "Commit #{i}" } }
@@ -146,6 +157,50 @@ module Tier0
       # Stub dependabot alerts
       stub_request(:get, %r{api.github.com/repos/.*/dependabot/alerts})
         .to_return(status: 200, body: [].to_json, headers: { "Content-Type" => "application/json" })
+
+      # Stub stargazers (for CommunitySignalAnalyzer)
+      stargazers = 10.times.map do |i|
+        {
+          starred_at: (i.days.ago).iso8601,
+          user: {
+            login: "stargazer#{i}",
+            id: 1000 + i,
+            created_at: 2.years.ago.iso8601,
+            public_repos: 10,
+            followers: 50
+          }
+        }
+      end
+      stub_request(:get, %r{api.github.com/repos/.*/stargazers})
+        .to_return(status: 200, body: stargazers.to_json, headers: { "Content-Type" => "application/json" })
+
+      # Stub forks (for CommunitySignalAnalyzer)
+      forks = 5.times.map do |i|
+        {
+          id: 2000 + i,
+          full_name: "forker#{i}/testrepo",
+          owner: {
+            login: "forker#{i}",
+            id: 3000 + i,
+            created_at: 1.year.ago.iso8601,
+            public_repos: 5,
+            followers: 20
+          }
+        }
+      end
+      stub_request(:get, %r{api.github.com/repos/.*/forks})
+        .to_return(status: 200, body: forks.to_json, headers: { "Content-Type" => "application/json" })
+
+      # Stub user endpoint (for account quality scoring)
+      stub_request(:get, %r{api.github.com/users/})
+        .to_return(status: 200, body: {
+          login: "testuser",
+          id: 12345,
+          created_at: 2.years.ago.iso8601,
+          updated_at: 1.week.ago.iso8601,
+          public_repos: 15,
+          followers: 30
+        }.to_json, headers: { "Content-Type" => "application/json" })
     end
   end
 end
