@@ -4,7 +4,7 @@ require "test_helper"
 
 class AgentTierTest < ActiveSupport::TestCase
   setup do
-    @agent = agents(:claude)
+    @agent = create(:agent, :with_score)
   end
 
   test "tier returns platinum for scores 90-100" do
