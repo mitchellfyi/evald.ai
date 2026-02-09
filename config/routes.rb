@@ -64,6 +64,9 @@ Rails.application.routes.draw do
           post :verify
         end
       end
+
+      # MCP (Model Context Protocol) endpoint
+      post "mcp", to: "mcp#handle"
     end
   end
 

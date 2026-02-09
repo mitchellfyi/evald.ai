@@ -101,7 +101,7 @@ class ClaimVerificationServiceTest < ActiveSupport::TestCase
     @claim.define_singleton_method(:verification_data) { {} }
 
     service = ClaimVerificationService.new(@claim)
-    result = service.send(:verify_api_key)
+    result = service.send(:verify_api_key?)
 
     assert_not result
   end
@@ -110,7 +110,7 @@ class ClaimVerificationServiceTest < ActiveSupport::TestCase
     @claim.define_singleton_method(:verification_data) { { "api_key" => "test-key" } }
 
     service = ClaimVerificationService.new(@claim)
-    result = service.send(:verify_api_key)
+    result = service.send(:verify_api_key?)
 
     assert result
   end

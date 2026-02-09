@@ -179,6 +179,103 @@ Profiles include:
 
 Agent builders can **claim their profile** to add context, respond to findings, and get notified when their score changes.
 
+## MCP Server (Model Context Protocol)
+
+Evald exposes an MCP server so AI agents can programmatically query the trust registry. Any MCP-compatible client (Claude Desktop, Cursor, Windsurf, custom agents) can discover and use these tools automatically.
+
+### Available Tools
+
+| Tool | Description |
+|---|---|
+| `get_agent_score` | Get trust score, confidence level, tier breakdown, and decay status |
+| `compare_agents` | Side-by-side comparison with per-dimension breakdown and recommendation |
+| `get_agent_profile` | Full profile — builder info, capabilities, tier details, claim status |
+| `check_trust_threshold` | Automated trust gate — passes/fails against a minimum score |
+| `search_agents` | Search by capability, min score, domain, or verification status |
+| `report_interaction` | Report agent interaction outcomes (trust-weighted feedback) |
+
+### Quick Start — stdio transport (local)
+
+```bash
+npx evald-mcp-server
+```
+
+Set `EVALD_API_URL` and `EVALD_API_KEY` as environment variables.
+
+### Quick Start — HTTP transport (remote)
+
+```bash
+POST https://evald.ai/api/v1/mcp
+Content-Type: application/json
+Authorization: Bearer your-api-key
+
+{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}
+```
+
+### Authentication
+
+An API key is required for authenticated access. Generate one from your Evald account:
+
+1. Sign in at [evald.ai](https://evald.ai)
+2. Go to your account settings → **API Keys**
+3. Create a new key and copy the token
+
+Use the token as your `EVALD_API_KEY` in MCP client configs, or pass it as a `Bearer` token in the `Authorization` header for HTTP requests.
+
+### Claude Desktop Configuration
+
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "evald": {
+      "command": "npx",
+      "args": ["evald-mcp-server"],
+      "env": {
+        "EVALD_API_URL": "https://evald.ai",
+        "EVALD_API_KEY": "evald_a1b2c3d4e5f6..."
+      }
+    }
+  }
+}
+```
+
+### Cursor Configuration
+
+Add to Cursor MCP settings:
+
+```json
+{
+  "mcpServers": {
+    "evald": {
+      "command": "npx",
+      "args": ["evald-mcp-server"],
+      "env": {
+        "EVALD_API_URL": "https://evald.ai",
+        "EVALD_API_KEY": "evald_a1b2c3d4e5f6..."
+      }
+    }
+  }
+}
+```
+
+### Example Agent Workflow
+
+```
+Human: "Before executing this task with CodeAgent, check their Evald score."
+
+Agent calls check_trust_threshold:
+  → agent_id: "code-agent", minimum_score: 80
+  → Result: { passes: true, current_score: 87 }
+
+Agent proceeds with the task.
+```
+
+### MCP-I Compatibility
+
+The Evald MCP server is compatible with MCP-I identity headers when present, but does not depend on MCP-I. Identity says "this is who I am" — Evald says "this is how trustworthy I am."
+
 ## Roadmap
 
 - [x] Tier 0 — passive signal scoring from public repos

@@ -1,8 +1,8 @@
 {
   "ignored_warnings": [
     {
-      "fingerprint": "715ee6d743a8af33c7b930d728708ce19c765fb40e2ad9d2b974db04d92dc7d1",
-      "note": "Ruby upgrade planned before EOL - tracking separately"
+      "fingerprint": "644bc54b0848b0172cb040350ac0a90f9a25d126fd73ee8594ea73fcefad6090",
+      "note": "github_url is validated with format regex (\\Ahttps://github.com/) on PendingAgent model - safe by construction"
     }
   ],
   "updated": "2026-02-09",

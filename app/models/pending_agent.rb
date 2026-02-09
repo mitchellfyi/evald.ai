@@ -7,7 +7,7 @@ class PendingAgent < ApplicationRecord
 
   validates :name, presence: true
   validates :github_url, presence: true, uniqueness: true,
-    format: { with: %r{\Ahttps://github\.com/[^/]+/[^/]+}, message: "must be a valid GitHub repository URL" }
+    format: { with: %r{\Ahttps://github\.com/[^/]+/[^/]+\z}, message: "must be a valid GitHub repository URL" }
   validates :status, presence: true, inclusion: { in: STATUSES }
   validates :confidence_score, numericality: { in: 0..100, allow_nil: true }
 

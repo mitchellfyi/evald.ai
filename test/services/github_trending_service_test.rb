@@ -86,7 +86,7 @@ class GithubTrendingServiceTest < ActiveSupport::TestCase
   test "calculate_confidence aggregates all scores" do
     repo = {
       "name" => "awesome-ai-agent",
-      "description" => "An autonomous agent framework",
+      "description" => "An autonomous agent framework for building intelligent AI systems",
       "topics" => ["ai-agent", "autonomous", "llm-agent"],
       "stargazers_count" => 500,
       "pushed_at" => 1.day.ago.iso8601,
