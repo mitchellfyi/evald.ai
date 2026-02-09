@@ -236,8 +236,8 @@ module Tier1
 
     # Sanitizes file paths to prevent directory traversal
     def sanitize_path(path)
-      # Remove any directory traversal attempts
-      path.gsub(/\.\./, "").gsub(%r{^/}, "")
+      # Remove any directory traversal attempts and all leading slashes
+      path.gsub(/\.\./, "").gsub(%r{^/+}, "")
     end
 
     # Runs the test suite in the sandbox
