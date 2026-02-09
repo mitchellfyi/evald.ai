@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "open3"
+
 module Tier1
   # CodingEvalHarness evaluates coding agents by running them against
   # standardized coding tasks in isolated sandbox environments.
@@ -281,8 +283,7 @@ module Tier1
 
       Dir.chdir(@sandbox_path) do
         Timeout.timeout(TEST_TIMEOUT_SECONDS) do
-          output = `#{command} 2>&1`
-          status = $?
+          output, status = Open3.capture2e(command)
         end
       end
 
