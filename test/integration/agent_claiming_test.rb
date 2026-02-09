@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "webmock/minitest"
 
 class AgentClaimingTest < ActionDispatch::IntegrationTest
   setup do
@@ -223,5 +224,129 @@ class AgentClaimingTest < ActionDispatch::IntegrationTest
     claim = create(:agent_claim, agent: @agent, user: @user)
     assert claim.verification_data.key?("token")
     assert claim.verification_data["token"].present?
+  end
+
+  # === GitHub Repo Access Verification Tests ===
+
+  test "verify_repo_access returns true for admin permission" do
+    WebMock.enable!
+    stub_request(:get, "https://api.github.com/repos/testuser/claimable-agent/collaborators/verifyuser/permission")
+      .to_return(
+        status: 200,
+        body: { permission: "admin", user: { login: "verifyuser" } }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    controller = Agents::ClaimsController.new
+    result = controller.send(:verify_repo_access, "https://github.com/testuser/claimable-agent", "verifyuser")
+
+    assert result
+    WebMock.disable!
+  end
+
+  test "verify_repo_access returns true for maintain permission" do
+    WebMock.enable!
+    stub_request(:get, "https://api.github.com/repos/testuser/claimable-agent/collaborators/maintainer/permission")
+      .to_return(
+        status: 200,
+        body: { permission: "maintain", user: { login: "maintainer" } }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    controller = Agents::ClaimsController.new
+    result = controller.send(:verify_repo_access, "https://github.com/testuser/claimable-agent", "maintainer")
+
+    assert result
+    WebMock.disable!
+  end
+
+  test "verify_repo_access returns false for write permission" do
+    WebMock.enable!
+    stub_request(:get, "https://api.github.com/repos/testuser/claimable-agent/collaborators/writer/permission")
+      .to_return(
+        status: 200,
+        body: { permission: "write", user: { login: "writer" } }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    controller = Agents::ClaimsController.new
+    result = controller.send(:verify_repo_access, "https://github.com/testuser/claimable-agent", "writer")
+
+    assert_not result
+    WebMock.disable!
+  end
+
+  test "verify_repo_access returns false for read permission" do
+    WebMock.enable!
+    stub_request(:get, "https://api.github.com/repos/testuser/claimable-agent/collaborators/reader/permission")
+      .to_return(
+        status: 200,
+        body: { permission: "read", user: { login: "reader" } }.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    controller = Agents::ClaimsController.new
+    result = controller.send(:verify_repo_access, "https://github.com/testuser/claimable-agent", "reader")
+
+    assert_not result
+    WebMock.disable!
+  end
+
+  test "verify_repo_access returns false for non-collaborator" do
+    WebMock.enable!
+    stub_request(:get, "https://api.github.com/repos/testuser/claimable-agent/collaborators/stranger/permission")
+      .to_return(status: 404, body: { message: "Not Found" }.to_json)
+
+    controller = Agents::ClaimsController.new
+    result = controller.send(:verify_repo_access, "https://github.com/testuser/claimable-agent", "stranger")
+
+    assert_not result
+    WebMock.disable!
+  end
+
+  test "verify_repo_access handles rate limit gracefully" do
+    WebMock.enable!
+    stub_request(:get, "https://api.github.com/repos/testuser/claimable-agent/collaborators/testuser/permission")
+      .to_return(
+        status: 403,
+        body: { message: "API rate limit exceeded for user" }.to_json
+      )
+
+    controller = Agents::ClaimsController.new
+    result = controller.send(:verify_repo_access, "https://github.com/testuser/claimable-agent", "testuser")
+
+    assert_not result
+    WebMock.disable!
+  end
+
+  test "verify_repo_access parses different repo URL formats" do
+    WebMock.enable!
+
+    # Test with https://github.com/ format
+    stub_request(:get, "https://api.github.com/repos/owner/repo/collaborators/user/permission")
+      .to_return(status: 200, body: { permission: "admin" }.to_json)
+
+    controller = Agents::ClaimsController.new
+
+    # Full URL
+    assert controller.send(:verify_repo_access, "https://github.com/owner/repo", "user")
+
+    # With .git suffix
+    assert controller.send(:verify_repo_access, "https://github.com/owner/repo.git", "user")
+
+    # Short format
+    assert controller.send(:verify_repo_access, "owner/repo", "user")
+
+    WebMock.disable!
+  end
+
+  test "verify_repo_access returns false for invalid repo format" do
+    controller = Agents::ClaimsController.new
+
+    # Single word - can't parse owner/repo
+    assert_not controller.send(:verify_repo_access, "invalid", "user")
+
+    # Empty string
+    assert_not controller.send(:verify_repo_access, "", "user")
   end
 end

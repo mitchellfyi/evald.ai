@@ -82,10 +82,26 @@ module Agents
     end
 
     def verify_repo_access(repo, username)
-      # TODO: Implement actual GitHub API check
-      # For now, return false (requires implementation)
-      # This would use Octokit or HTTP to check:
-      # GET /repos/{owner}/{repo}/collaborators/{username}/permission
+      # Parse repo into owner/name format
+      parts = repo.gsub(%r{^https?://github\.com/}, "").split("/")
+      return false unless parts.length >= 2
+
+      owner = parts[0]
+      name = parts[1].sub(/\.git$/, "")
+
+      client = GithubClient.new
+      permission_data = client.collaborator_permission(owner, name, username)
+
+      return false unless permission_data
+
+      # Require admin or maintain permission for verification
+      permission = permission_data["permission"]
+      %w[admin maintain].include?(permission)
+    rescue GithubClient::RateLimitError
+      Rails.logger.warn("GitHub API rate limit hit during claim verification for #{repo}")
+      false
+    rescue StandardError => e
+      Rails.logger.error("GitHub verification error for #{repo}: #{e.message}")
       false
     end
   end

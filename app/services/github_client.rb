@@ -33,9 +33,40 @@ class GithubClient
     get("/repos/#{owner}/#{name}/contents/#{path}") rescue nil
   end
 
+  # Check user's permission level on a repository
+  # Returns: { permission: "admin"|"maintain"|"write"|"triage"|"read", ... }
+  # or nil if the user is not a collaborator
+  def collaborator_permission(owner, name, username)
+    return nil unless @token
+
+    response = get_with_status("/repos/#{owner}/#{name}/collaborators/#{username}/permission")
+
+    case response[:status]
+    when 200
+      response[:body]
+    when 404
+      # User is not a collaborator or repo doesn't exist
+      nil
+    when 403
+      # Rate limited or forbidden
+      raise RateLimitError, "GitHub API rate limit exceeded" if response[:body]["message"]&.include?("rate limit")
+      nil
+    else
+      nil
+    end
+  end
+
+  class RateLimitError < StandardError; end
+  class RepoNotFoundError < StandardError; end
+
   private
 
   def get(path, params = {})
+    response = get_with_status(path, params)
+    response[:body]
+  end
+
+  def get_with_status(path, params = {})
     uri = URI("#{BASE_URL}#{path}")
     uri.query = URI.encode_www_form(params) if params.any?
 
@@ -44,6 +75,12 @@ class GithubClient
     request["Accept"] = "application/vnd.github.v3+json"
 
     response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
-    JSON.parse(response.body)
+
+    {
+      status: response.code.to_i,
+      body: JSON.parse(response.body)
+    }
+  rescue JSON::ParserError
+    { status: response&.code.to_i || 500, body: {} }
   end
 end

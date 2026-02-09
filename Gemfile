@@ -105,4 +105,5 @@ group :test do
   gem "factory_bot_rails"
   gem "shoulda-matchers"
   gem "simplecov", require: false
+  gem "webmock"
 end
