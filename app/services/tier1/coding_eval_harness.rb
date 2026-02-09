@@ -286,7 +286,7 @@ module Tier1
         end
       end
 
-      [output, status]
+      [ output, status ]
     rescue Timeout::Error
       raise TestError, "Tests timed out after #{TEST_TIMEOUT_SECONDS}s"
     end

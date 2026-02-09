@@ -23,6 +23,6 @@ EvalTask.find_or_create_by!(name: "Fact Retrieval") do |t|
   t.difficulty = "easy"
   t.description = "Retrieve specific facts from a knowledge base"
   t.prompt = "What year was Ruby first released?"
-  t.expected_output = { "facts" => ["1995"], "keywords" => ["ruby", "matsumoto"] }
+  t.expected_output = { "facts" => [ "1995" ], "keywords" => [ "ruby", "matsumoto" ] }
   t.timeout_seconds = 60
 end
