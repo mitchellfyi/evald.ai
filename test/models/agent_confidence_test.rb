@@ -47,8 +47,9 @@ class AgentConfidenceTest < ActiveSupport::TestCase
       tier1_scope_discipline: 0.75,
       tier1_safety: 0.88,
       last_verified_at: 5.days.ago)
-    create(:evaluation, :completed, agent: agent, tier: "tier1", score: 85.0)
-    create(:evaluation, :completed, agent: agent, tier: "tier1", score: 87.0)
+    task = create(:eval_task)
+    create(:eval_run, :completed, agent: agent, eval_task: task, metrics: { "score" => 85 })
+    create(:eval_run, :completed, agent: agent, eval_task: task, metrics: { "score" => 87 })
     assert_equal "high", agent.confidence_level
   end
 
@@ -61,8 +62,9 @@ class AgentConfidenceTest < ActiveSupport::TestCase
       tier1_scope_discipline: 0.75,
       tier1_safety: 0.88,
       last_verified_at: 60.days.ago)
-    create(:evaluation, :completed, agent: agent, tier: "tier1", score: 85.0)
-    create(:evaluation, :completed, agent: agent, tier: "tier1", score: 87.0)
+    task = create(:eval_task)
+    create(:eval_run, :completed, agent: agent, eval_task: task, metrics: { "score" => 85 })
+    create(:eval_run, :completed, agent: agent, eval_task: task, metrics: { "score" => 87 })
     refute_equal "high", agent.confidence_level
   end
 
@@ -79,32 +81,20 @@ class AgentConfidenceTest < ActiveSupport::TestCase
   end
 
   test "confidence_factors detects low variance" do
-    agent = create(:agent,
-      tier0_repo_health: 80.0,
-      tier1_accuracy: 0.85,
-      tier1_completion_rate: 0.90,
-      tier1_cost_efficiency: 0.80,
-      tier1_scope_discipline: 0.75,
-      tier1_safety: 0.88,
-      last_verified_at: 5.days.ago)
-    create(:evaluation, :completed, agent: agent, tier: "tier1", score: 85.0)
-    create(:evaluation, :completed, agent: agent, tier: "tier1", score: 86.0)
+    agent = create(:agent, tier0_repo_health: 80.0)
+    task = create(:eval_task)
+    create(:eval_run, :completed, agent: agent, eval_task: task, metrics: { "score" => 85 })
+    create(:eval_run, :completed, agent: agent, eval_task: task, metrics: { "score" => 86 })
     factors = agent.confidence_factors
 
     assert factors[:low_variance], "Scores 85 and 86 should have low variance"
   end
 
   test "confidence_factors detects high variance" do
-    agent = create(:agent,
-      tier0_repo_health: 80.0,
-      tier1_accuracy: 0.85,
-      tier1_completion_rate: 0.90,
-      tier1_cost_efficiency: 0.80,
-      tier1_scope_discipline: 0.75,
-      tier1_safety: 0.88,
-      last_verified_at: 5.days.ago)
-    create(:evaluation, :completed, agent: agent, tier: "tier1", score: 50.0)
-    create(:evaluation, :completed, agent: agent, tier: "tier1", score: 95.0)
+    agent = create(:agent, tier0_repo_health: 80.0)
+    task = create(:eval_task)
+    create(:eval_run, :completed, agent: agent, eval_task: task, metrics: { "score" => 50 })
+    create(:eval_run, :completed, agent: agent, eval_task: task, metrics: { "score" => 95 })
     factors = agent.confidence_factors
 
     refute factors[:low_variance], "Scores 50 and 95 should have high variance"
@@ -125,10 +115,17 @@ class AgentConfidenceTest < ActiveSupport::TestCase
       tier1_scope_discipline: 0.75,
       tier1_safety: 0.88,
       last_verified_at: 5.days.ago)
-    create(:evaluation, :completed, agent: agent, tier: "tier1", score: 50.0)
-    create(:evaluation, :completed, agent: agent, tier: "tier1", score: 95.0)
+    task = create(:eval_task)
+    create(:eval_run, :completed, agent: agent, eval_task: task, metrics: { "score" => 50 })
+    create(:eval_run, :completed, agent: agent, eval_task: task, metrics: { "score" => 95 })
 
     assert_equal "medium", agent.confidence_level,
       "High variance should prevent high confidence, falling back to medium"
+  end
+
+  test "tier0 with zero-value score is still detected as having data" do
+    agent = create(:agent, tier0_repo_health: 0.0)
+    assert_equal "low", agent.confidence_level,
+      "Zero-value tier0 score should still count as having tier0 data"
   end
 end

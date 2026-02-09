@@ -213,27 +213,33 @@ class Agent < ApplicationRecord
 
   # Compute confidence level based on data availability and recency
   def confidence_level
-    confidence_factors[:level]
+    @confidence_level ||= confidence_factors[:level]
   end
 
   # Detailed breakdown of confidence calculation
   def confidence_factors
-    has_tier0 = tier0_summary.values.any? { |v| v.present? && v > 0 }
-    has_tier1 = tier1_summary.values.any? { |v| v.present? && v > 0 }
+    @confidence_factors ||= compute_confidence_factors
+  end
+
+  private
+
+  def compute_confidence_factors
+    has_tier0 = tier0_summary.values.any?(&:present?)
+    has_tier1 = tier1_summary.values.any?(&:present?)
     tier1_complete = has_tier1 && tier1_summary.size == TIER1_WEIGHTS.size
 
-    completed_evals = evaluations.completed
-    tier0_evals = completed_evals.by_tier("tier0")
-    tier1_evals = completed_evals.by_tier("tier1")
-    tier1_run_count = tier1_evals.count
+    completed_runs = eval_runs.completed
+    tier1_run_count = completed_runs.count
 
     recent_cutoff = 30.days.ago
     recent_eval = last_verified_at.present? && last_verified_at > recent_cutoff
 
-    tier1_scores = tier1_evals.where.not(score: nil).pluck(:score).map(&:to_f)
-    low_variance = if tier1_scores.size >= 2
-      mean = tier1_scores.sum / tier1_scores.size
-      variance = tier1_scores.sum { |s| (s - mean)**2 } / tier1_scores.size
+    run_scores = completed_runs.where.not(metrics: nil)
+      .pluck(:metrics)
+      .filter_map { |m| m["score"]&.to_f }
+    low_variance = if run_scores.size >= 2
+      mean = run_scores.sum / run_scores.size
+      variance = run_scores.sum { |s| (s - mean)**2 } / run_scores.size
       variance < 100 # standard deviation < 10 points
     else
       false
@@ -242,7 +248,7 @@ class Agent < ApplicationRecord
     # High requires: complete tiers, multiple runs, recent data, and consistent scores
     level = if has_tier0 && tier1_complete && tier1_run_count >= 2 && recent_eval && low_variance
               "high"
-            elsif has_tier0 && (has_tier1 || tier0_evals.where("created_at > ?", 60.days.ago).any?)
+            elsif has_tier0 && (has_tier1 || evaluations.completed.by_tier("tier0").where("created_at > ?", 60.days.ago).any?)
               "medium"
             elsif has_tier0
               "low"
@@ -259,8 +265,6 @@ class Agent < ApplicationRecord
       low_variance: low_variance
     }
   end
-
-  private
 
   def generate_slug
     self.slug ||= name&.parameterize

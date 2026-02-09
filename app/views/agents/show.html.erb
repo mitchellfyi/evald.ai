@@ -55,9 +55,10 @@
           <%= @agent.decayed_score&.round || 'N/A' %>
         </div>
         <div class="text-gray-500 text-sm mt-1">Evald Score</div>
-        <div class="mt-2" title="<%= confidence_tooltip(@agent.confidence_level) %>">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= confidence_badge_class(@agent.confidence_level) %>">
-            <%= confidence_label(@agent.confidence_level) %>
+        <% confidence = @agent.confidence_level %>
+        <div class="mt-2" title="<%= confidence_tooltip(confidence) %>">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= confidence_badge_class(confidence) %>">
+            <%= confidence_label(confidence) %>
           </span>
         </div>
         <% if @agent.last_verified_at.present? %>

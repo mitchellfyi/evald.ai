@@ -49,7 +49,7 @@ module AgentsHelper
     when "high"
       "Score based on comprehensive Tier 0 and Tier 1 evaluations with multiple recent runs."
     when "medium"
-      "Score based on Tier 0 evaluation with partial or older Tier 1 data."
+      "Score based on Tier 0 evaluation with partial Tier 1 data or recent evaluation activity."
     when "low"
       "Score based on Tier 0 passive signals only. No Tier 1 task evaluations completed."
     else
