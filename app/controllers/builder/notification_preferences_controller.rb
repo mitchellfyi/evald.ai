@@ -5,7 +5,8 @@ module Builder
     before_action :authorize_agent
 
     def edit
-      @notification_preference = @agent.notification_preferences.find_or_initialize_by(user: current_user)
+      # Notification preferences are edited within the agent edit page
+      redirect_to edit_builder_agent_path(@agent)
     end
 
     def update
@@ -14,7 +15,7 @@ module Builder
       if @notification_preference.update(notification_params)
         redirect_to edit_builder_agent_path(@agent), notice: "Notification preferences updated."
       else
-        render "builder/agents/edit", status: :unprocessable_entity
+        render "builder/agents/edit", status: :unprocessable_content
       end
     end
 
@@ -31,10 +32,8 @@ module Builder
     end
 
     def notification_params
-      params.require(:notification_preference).permit(
-        :score_changes, :new_eval_results,
-        :comparison_mentions, :email_enabled
-      )
+      params.expect(notification_preference: [:score_changes, :new_eval_results,
+        :comparison_mentions, :email_enabled])
     end
   end
 end

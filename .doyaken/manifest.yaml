@@ -1,0 +1,28 @@
+# AI Agent Project Manifest
+# Generated: 2026-02-09T15:58:04Z
+
+version: 1
+
+project:
+  name: "evald.ai"
+  description: ""
+
+git:
+  remote: "https://github.com/mitchellfyi/evald.ai.git"
+  branch: "main"
+
+domains: {}
+
+tools: {}
+
+quality:
+  test_command: ""
+  lint_command: ""
+  format_command: ""
+  build_command: ""
+
+agent:
+  name: "claude"
+  model: "opus"
+  max_retries: 2
+  parallel_workers: 2

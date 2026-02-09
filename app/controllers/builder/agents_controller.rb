@@ -13,7 +13,7 @@ module Builder
         redirect_to edit_builder_agent_path(@agent), notice: "Profile updated successfully."
       else
         @notification_preference = @agent.notification_preferences.find_or_initialize_by(user: current_user)
-        render :edit, status: :unprocessable_entity
+        render :edit, status: :unprocessable_content
       end
     end
 
@@ -31,10 +31,8 @@ module Builder
 
     # Only allow builder-editable fields
     def builder_agent_params
-      params.require(:agent).permit(
-        :description, :tagline, :use_case,
-        :documentation_url, :changelog_url, :demo_url
-      )
+      params.expect(agent: [:description, :tagline, :use_case,
+        :documentation_url, :changelog_url, :demo_url])
     end
   end
 end

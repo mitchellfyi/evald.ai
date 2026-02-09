@@ -36,3 +36,7 @@ Metrics/MethodLength:
   Exclude:
     - 'test/**/*'
     - 'db/migrate/*'
+
+# Disable template existence check - false positives in CI
+GitHub/RailsControllerRenderPathsExist:
+  Enabled: false
