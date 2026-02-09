@@ -3,7 +3,7 @@
 # Mailer for agent score-related notifications.
 # Sends emails when agent scores decay below notification thresholds.
 class AgentScoreMailer < ApplicationMailer
-  default from: "evaled.ai <notifications@evaled.ai>"
+  default from: "evald.ai <notifications@evald.ai>"
 
   # Sends a warning email when an agent's score has decayed significantly
   #

@@ -1,5 +1,5 @@
 {
-  "name": "evaled.ai",
+  "name": "evald.ai",
   "description": "AI Agent Evaluation Platform",
   "scripts": {
     "postdeploy": "bundle exec rails db:migrate db:seed"

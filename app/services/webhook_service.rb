@@ -9,7 +9,7 @@ require "openssl"
 # Handles payload formatting, HMAC signing, and HTTP delivery.
 class WebhookService
   TIMEOUT_SECONDS = 10
-  USER_AGENT = "evaled.ai-webhooks/1.0"
+  USER_AGENT = "evald.ai-webhooks/1.0"
 
   class DeliveryError < StandardError; end
 
@@ -91,8 +91,8 @@ class WebhookService
     request = Net::HTTP::Post.new(uri.request_uri)
     request["Content-Type"] = "application/json"
     request["User-Agent"] = USER_AGENT
-    request["X-Evaled-Event"] = payload[:event]
-    request["X-Evaled-Delivery"] = payload[:id]
+    request["X-Evald-Event"] = payload[:event]
+    request["X-Evald-Delivery"] = payload[:id]
 
     body = payload.to_json
     request.body = body
@@ -100,7 +100,7 @@ class WebhookService
     # Add HMAC signature if secret is configured
     if @endpoint.secret.present?
       signature = compute_signature(body)
-      request["X-Evaled-Signature"] = "sha256=#{signature}"
+      request["X-Evald-Signature"] = "sha256=#{signature}"
     end
 
     request

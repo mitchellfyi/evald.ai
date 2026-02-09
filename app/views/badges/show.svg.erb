@@ -1,6 +1,6 @@
 <%
   score = @agent.decayed_score&.round || 'N/A'
-  label = 'evaled'
+  label = 'evald'
   
   color = case @agent.decayed_score.to_f
           when 90..100 then '#4ade80' # green

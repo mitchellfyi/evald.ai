@@ -26,7 +26,7 @@ class ClaimVerificationService
 
     # Check DNS TXT record
     begin
-      records = Resolv::DNS.open { |dns| dns.getresources("_evaled.#{domain}", Resolv::DNS::Resource::IN::TXT) }
+      records = Resolv::DNS.open { |dns| dns.getresources("_evald.#{domain}", Resolv::DNS::Resource::IN::TXT) }
       records.any? { |r| r.strings.join.include?(expected_token) }
     rescue
       false
@@ -41,7 +41,7 @@ class ClaimVerificationService
     client = GithubClient.new
 
     begin
-      content = client.contents(owner, repo, ".evaled/verify.txt")
+      content = client.contents(owner, repo, ".evald/verify.txt")
       return false unless content&.dig("content")
 
       decoded = Base64.decode64(content["content"])

@@ -46,7 +46,7 @@ class BadgeGenerator
 
     def generate_error_svg(message)
       render_badge(
-        label: "evaled",
+        label: "evald",
         value: message,
         color: "#9f9f9f",
         style: "flat"
@@ -60,7 +60,7 @@ class BadgeGenerator
       color = score_color(score)
 
       render_badge(
-        label: "evaled",
+        label: "evald",
         value: "#{score.round}%",
         color: color,
         style: style
@@ -72,7 +72,7 @@ class BadgeGenerator
       color = COLORS[tier.downcase.to_sym] || COLORS[:unrated]
 
       render_badge(
-        label: "evaled tier",
+        label: "evald tier",
         value: tier.capitalize,
         color: color,
         style: style
@@ -97,7 +97,7 @@ class BadgeGenerator
       color = COLORS[status.to_sym]
 
       render_badge(
-        label: "evaled",
+        label: "evald",
         value: certified ? "Certified" : "Uncertified",
         color: color,
         style: style

@@ -79,7 +79,7 @@
     <tr>
       <th>ID</th>
       <th>Name</th>
-      <th>Provider</th>
+      <th>Category</th>
       <th>Status</th>
       <th>Created</th>
       <th>Actions</th>
@@ -90,7 +90,7 @@
       <tr>
         <td><%= agent.id %></td>
         <td><%= agent.name %></td>
-        <td><%= agent.provider %></td>
+        <td><%= agent.category %></td>
         <td>
           <% if agent.try(:active) != false %>
             <span class="badge badge-active">Active</span>

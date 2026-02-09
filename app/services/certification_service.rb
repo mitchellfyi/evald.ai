@@ -47,7 +47,7 @@ class CertificationService
       level: level,
       issued_at: Time.current,
       expires_at: 1.year.from_now,
-      issuer: "evaled.ai"
+      issuer: "evald.ai"
     )
   end
 end

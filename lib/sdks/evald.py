@@ -1,5 +1,5 @@
 """
-Evaled.ai Python SDK
+Evald.ai Python SDK
 Lightweight telemetry client for AI agent monitoring
 """
 
@@ -13,16 +13,16 @@ import urllib.request
 import urllib.error
 
 
-class EvaledClient:
+class EvaldClient:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        base_url: str = "https://api.evaled.ai/v1",
+        base_url: str = "https://api.evald.ai/v1",
         agent_id: Optional[str] = None,
         batch_size: int = 10,
         flush_interval: float = 5.0
     ):
-        self.api_key = api_key or os.environ.get("EVALED_API_KEY")
+        self.api_key = api_key or os.environ.get("EVALD_API_KEY")
         self.base_url = base_url
         self.agent_id = agent_id
         self.batch_size = batch_size
@@ -85,7 +85,7 @@ class EvaledClient:
         except Exception as e:
             with self._lock:
                 self._queue = events + self._queue
-            print(f"[Evaled] Failed to send events: {e}")
+            print(f"[Evald] Failed to send events: {e}")
     
     def _send_events(self, events: List[Dict]):
         url = f"{self.base_url}/telemetry/events"

@@ -17,5 +17,5 @@ jobs:
       - name: Deploy to Dokku
         uses: dokku/github-action@master
         with:
-          git_remote_url: 'ssh://dokku@159.203.120.73:22/evaled-ai'
+          git_remote_url: 'ssh://dokku@159.203.120.73:22/evald-ai'
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}

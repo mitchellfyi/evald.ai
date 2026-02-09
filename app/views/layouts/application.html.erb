@@ -3,18 +3,18 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><%= content_for(:title) || "Evaled.ai - The Trust Score for AI Agents" %></title>
-    <meta name="description" content="<%= content_for(:description) || "Evaled continuously evaluates AI agents so you don't have to. Every agent gets a public trust profile built from real data." %>">
+    <title><%= content_for(:title) || "Evald.ai - The Trust Score for AI Agents" %></title>
+    <meta name="description" content="<%= content_for(:description) || "Evald continuously evaluates AI agents so you don't have to. Every agent gets a public trust profile built from real data." %>">
     
     <!-- Open Graph -->
-    <meta property="og:title" content="<%= content_for(:title) || "Evaled.ai" %>">
+    <meta property="og:title" content="<%= content_for(:title) || "Evald.ai" %>">
     <meta property="og:description" content="<%= content_for(:description) || "The trust score for AI agents" %>">
     <meta property="og:type" content="website">
     <meta property="og:url" content="<%= request.original_url %>">
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="<%= content_for(:title) || "Evaled.ai" %>">
+    <meta name="twitter:title" content="<%= content_for(:title) || "Evald.ai" %>">
     <meta name="twitter:description" content="<%= content_for(:description) || "The trust score for AI agents" %>">
     
     <%= csrf_meta_tags %>
@@ -31,7 +31,7 @@
         <div class="flex justify-between h-16">
           <div class="flex items-center">
             <%= link_to root_path, class: "flex items-center" do %>
-              <span class="text-2xl font-bold text-indigo-600">evaled</span>
+              <span class="text-2xl font-bold text-indigo-600">evald</span>
               <span class="text-2xl font-light text-gray-400">.ai</span>
             <% end %>
             <div class="hidden sm:ml-8 sm:flex sm:space-x-6">
@@ -69,7 +69,7 @@
       <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center">
           <p class="text-gray-500 text-sm">
-            © <%= Date.current.year %> Evaled.ai. Built by 
+            © <%= Date.current.year %> Evald.ai. Built by 
             <a href="https://mitchellbryson.com" class="text-indigo-600 hover:text-indigo-700">Mitchell Bryson</a>.
           </p>
           <div class="flex space-x-6">

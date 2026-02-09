@@ -48,7 +48,7 @@
         <h3 class="text-lg font-semibold mb-2">Recommendation</h3>
         <% best_agent = @agents.max_by { |a| a.decayed_score || 0 } %>
         <p class="text-gray-700">
-          Based on Evaled scores, <strong><%= best_agent.name %></strong> has the highest score 
+          Based on Evald scores, <strong><%= best_agent.name %></strong> has the highest score 
           (<%= number_with_precision(best_agent.decayed_score, precision: 1) %>).
         </p>
       </div>

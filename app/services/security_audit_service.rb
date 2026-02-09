@@ -31,7 +31,7 @@ class SecurityAuditService
 
     SecurityAudit.create!(
       agent: @agent,
-      auditor: "evaled_automated",
+      auditor: "evald_automated",
       audit_type: "automated",
       findings: findings,
       severity_summary: severity_summary,

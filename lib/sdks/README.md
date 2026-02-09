@@ -1,13 +1,13 @@
-# Evaled.ai SDKs
+# Evald.ai SDKs
 
 Lightweight telemetry clients for AI agent monitoring.
 
 ## JavaScript
 
 ```javascript
-const { EvaledClient } = require('./evaled.js');
+const { EvaldClient } = require('./evald.js');
 
-const client = new EvaledClient({
+const client = new EvaldClient({
   apiKey: 'your-api-key',
   agentId: 'agent-uuid'
 });
@@ -24,9 +24,9 @@ const score = await client.getScore();
 ## Python
 
 ```python
-from evaled import EvaledClient
+from evald import EvaldClient
 
-client = EvaledClient(
+client = EvaldClient(
     api_key="your-api-key",
     agent_id="agent-uuid"
 )

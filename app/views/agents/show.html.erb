@@ -1,5 +1,5 @@
-<% content_for :title, "#{@agent.name} - Evaled Score #{@agent.decayed_score&.round || 'N/A'} | Evaled.ai" %>
-<% content_for :description, @agent.description || "View the trust score and evaluation details for #{@agent.name} on Evaled.ai" %>
+<% content_for :title, "#{@agent.name} - Evald Score #{@agent.decayed_score&.round || 'N/A'} | Evald.ai" %>
+<% content_for :description, @agent.description || "View the trust score and evaluation details for #{@agent.name} on Evald.ai" %>
 
 <div class="max-w-4xl mx-auto">
   <!-- Header -->
@@ -54,7 +54,7 @@
         <div class="text-5xl font-bold <%= score_color_class(@agent.decayed_score) %>">
           <%= @agent.decayed_score&.round || 'N/A' %>
         </div>
-        <div class="text-gray-500 text-sm mt-1">Evaled Score</div>
+        <div class="text-gray-500 text-sm mt-1">Evald Score</div>
         <% if @agent.last_verified_at.present? %>
           <div class="text-gray-400 text-xs mt-2">
             Verified <%= time_ago_in_words(@agent.last_verified_at) %> ago
@@ -123,10 +123,10 @@
   <div class="bg-white rounded-xl p-6 shadow mb-8">
     <h2 class="text-lg font-bold text-gray-900 mb-4">Add Badge to Your README</h2>
     <div class="flex items-center space-x-4 mb-4">
-      <img src="<%= badge_agent_path(@agent, format: :svg) %>" alt="Evaled Score" class="h-6">
+      <img src="<%= badge_agent_path(@agent, format: :svg) %>" alt="Evald Score" class="h-6">
     </div>
     <div class="bg-gray-50 rounded-lg p-4">
-      <code class="text-sm text-gray-700 break-all">[![Evaled Score](https://evaled.ai<%= badge_agent_path(@agent, format: :svg) %>)](https://evaled.ai<%= agent_path(@agent) %>)</code>
+      <code class="text-sm text-gray-700 break-all">[![Evald Score](https://evald.ai<%= badge_agent_path(@agent, format: :svg) %>)](https://evald.ai<%= agent_path(@agent) %>)</code>
     </div>
   </div>
 
