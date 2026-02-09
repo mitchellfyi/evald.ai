@@ -3,6 +3,7 @@ class Agent < ApplicationRecord
   has_many :agent_scores, dependent: :destroy
   has_many :agent_telemetry_stats, dependent: :destroy
   has_many :certifications, dependent: :destroy
+  has_many :security_scans, dependent: :destroy
   belongs_to :claimed_by_user, class_name: "User", optional: true
 
   validates :name, presence: true

@@ -32,6 +32,7 @@ Rails.application.routes.draw do
         end
       end
       resources :telemetry, only: [ :create ]
+      resources :certifications, only: [ :show, :create ]
     end
   end
 
