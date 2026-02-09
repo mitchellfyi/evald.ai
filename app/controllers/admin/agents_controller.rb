@@ -17,7 +17,7 @@ module Admin
       if @agent.update(agent_params)
         redirect_to admin_agent_path(@agent), notice: "Agent updated successfully."
       else
-        render :edit, status: :unprocessable_content
+        render "admin/agents/edit", status: :unprocessable_content
       end
     end
 
@@ -49,7 +49,7 @@ module Admin
     end
 
     def agent_params
-      params.expect(agent: [:name, :slug, :description, :repo_url, :active])
+      params.expect(agent: [:name, :slug, :description, :repo_url, :category])
     end
   end
 end

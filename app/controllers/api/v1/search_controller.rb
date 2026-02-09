@@ -11,7 +11,7 @@ module Api
 
         if params[:q].present?
           agents = agents.where(
-            "name ILIKE :q OR description ILIKE :q OR provider ILIKE :q",
+            "name ILIKE :q OR description ILIKE :q OR category ILIKE :q",
             q: "%#{params[:q]}%"
           )
         end
@@ -34,10 +34,9 @@ module Api
         {
           slug: agent.slug,
           name: agent.name,
-          provider: agent.provider,
+          category: agent.category,
           score: agent.score,
           tier: agent.tier,
-          categories: agent.categories,
           description: agent.description&.truncate(200)
         }
       end

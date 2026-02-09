@@ -55,7 +55,7 @@ module Admin
         agent: {
           name: "Updated Agent",
           description: "New description",
-          active: true
+          category: "coding"
         }
       }
 
@@ -81,12 +81,12 @@ module Admin
           name: "New Name",
           slug: "new-slug",
           description: "New description",
-          provider: "openai",
-          url: "https://example.com"
+          repo_url: "https://github.com/example/repo",
+          category: "coding"
         }
       }
 
-      assert_redirected_to admin_agent_path(@agent)
+      assert_redirected_to admin_agent_path(id: "new-slug")
       @agent.reload
       assert_equal "New Name", @agent.name
       assert_equal "new-slug", @agent.slug

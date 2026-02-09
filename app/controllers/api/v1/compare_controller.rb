@@ -25,23 +25,19 @@ module Api
         {
           slug: agent.slug,
           name: agent.name,
-          provider: agent.provider,
+          category: agent.category,
           score: agent.score,
           tier: agent.tier,
-          categories: agent.categories,
           tier_scores: tier_breakdown(agent),
-          strengths: agent.categories&.first(3) || [],
-          last_evaluated: agent.evaluated_at&.iso8601
+          strengths: [agent.category].compact.first(3),
+          last_evaluated: agent.last_verified_at&.iso8601
         }
       end
 
       def tier_breakdown(agent)
         {
-          tier0: agent.tier0_score,
-          tier1: agent.tier1_score,
-          tier2: agent.tier2_score,
-          tier3: agent.tier3_score,
-          tier4: agent.tier4_score
+          tier0: agent.compute_tier0_score,
+          tier1: agent.compute_tier1_score
         }
       end
 

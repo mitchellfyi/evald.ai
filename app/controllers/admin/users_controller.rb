@@ -17,7 +17,7 @@ module Admin
       if @user.update(user_params)
         redirect_to admin_user_path(@user), notice: "User updated successfully."
       else
-        render :edit, status: :unprocessable_content
+        render "admin/users/edit", status: :unprocessable_content
       end
     end
 

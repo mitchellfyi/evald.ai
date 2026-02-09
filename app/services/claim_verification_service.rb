@@ -9,7 +9,7 @@ class ClaimVerificationService
     result = case @claim.verification_method
     when "dns_txt" then verify_dns
     when "github_file" then verify_github
-    when "api_key" then verify_api_key
+    when "api_key" then verify_api_key?
     else false
     end
 
@@ -51,7 +51,7 @@ class ClaimVerificationService
     end
   end
 
-  def verify_api_key
+  def verify_api_key?
     expected_key = @claim.verification_data["api_key"]
     return false unless expected_key
 

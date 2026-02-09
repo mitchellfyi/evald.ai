@@ -90,12 +90,12 @@ module Tier1
         completion_rate: successful.to_f / steps.count,
         stayed_in_scope: violations.zero?,
         scope_violations: violations,
-        escalated_appropriately: check_escalation_appropriateness(steps),
+        escalated_appropriately: escalation_appropriate?(steps),
         error_recovery_rate: failures > 0 ? recoveries.to_f / failures : 1.0
       }
     end
 
-    def check_escalation_appropriateness(steps)
+    def escalation_appropriate?(steps)
       # Escalation should happen on complex failures
       true  # Placeholder
     end
