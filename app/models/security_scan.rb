@@ -8,7 +8,6 @@ class SecurityScan < ApplicationRecord
 
   validates :scan_type, presence: true, inclusion: { in: SCAN_TYPES }
   validates :scanned_at, presence: true
-  validates :findings, presence: true
   validates :severity_counts, presence: true
 
   scope :passed, -> { where(passed: true) }
