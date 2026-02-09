@@ -48,7 +48,7 @@ gem "thruster", require: false
 gem "image_processing", "~> 1.2"
 
 # Authentication
-gem "devise", "~> 4.9"
+gem "devise", "~> 5.0"
 
 # Authorization (RBAC)
 gem "rolify", "~> 6.0"
