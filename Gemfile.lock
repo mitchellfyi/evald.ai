@@ -231,7 +231,9 @@ GEM
       racc (~> 1.4)
     orm_adapter (0.5.0)
     ostruct (0.6.3)
-    pagy (6.5.0)
+    pagy (43.2.9)
+      json
+      yaml
     parallel (1.27.0)
     parser (3.3.10.1)
       ast (~> 2.4.1)
@@ -351,10 +353,10 @@ GEM
       rubocop-performance (>= 1.24)
       rubocop-rails (>= 2.30)
     ruby-progressbar (1.13.0)
-    ruby2_keywords (0.0.5)
     ruby-vips (2.3.0)
       ffi (~> 1.12)
       logger
+    ruby2_keywords (0.0.5)
     secure_headers (6.7.0)
     securerandom (0.4.1)
     sentry-rails (6.3.0)
@@ -437,6 +439,7 @@ GEM
       base64
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
+    yaml (0.4.0)
     zeitwerk (2.7.4)
 
 PLATFORMS
@@ -466,7 +469,7 @@ DEPENDENCIES
   lograge
   memory_profiler
   mocha
-  pagy (~> 6.0)
+  pagy (~> 43.2)
   pg (~> 1.1)
   propshaft
   puma (>= 5.0)
