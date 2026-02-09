@@ -137,4 +137,179 @@ class GithubClientTest < ActiveSupport::TestCase
 
     assert_equal "read", result["permission"]
   end
+
+  # === Stargazers Tests ===
+
+  test "stargazers returns array of stargazers with timestamps" do
+    stargazers = [
+      { user: { login: "user1", id: 1 }, starred_at: "2024-01-15T10:00:00Z" },
+      { user: { login: "user2", id: 2 }, starred_at: "2024-01-16T10:00:00Z" }
+    ]
+
+    stub_request(:get, "https://api.github.com/repos/testowner/testrepo/stargazers")
+      .with(
+        headers: {
+          "Authorization" => "Bearer test_token",
+          "Accept" => "application/vnd.github.v3.star+json"
+        }
+      )
+      .to_return(
+        status: 200,
+        body: stargazers.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    result = @client.stargazers("testowner", "testrepo")
+
+    assert_equal 2, result.size
+    assert_equal "user1", result[0]["user"]["login"]
+    assert_equal "2024-01-15T10:00:00Z", result[0]["starred_at"]
+  end
+
+  test "stargazers supports pagination" do
+    stub_request(:get, "https://api.github.com/repos/testowner/testrepo/stargazers")
+      .with(query: { per_page: 50, page: 2 })
+      .to_return(
+        status: 200,
+        body: [{ user: { login: "user3" }, starred_at: "2024-01-17T10:00:00Z" }].to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    result = @client.stargazers("testowner", "testrepo", per_page: 50, page: 2)
+
+    assert_equal 1, result.size
+    assert_equal "user3", result[0]["user"]["login"]
+  end
+
+  test "stargazers returns empty array on error" do
+    stub_request(:get, "https://api.github.com/repos/testowner/testrepo/stargazers")
+      .to_return(status: 500, body: "Internal Server Error")
+
+    result = @client.stargazers("testowner", "testrepo")
+
+    assert_equal [], result
+  end
+
+  # === Forks Tests ===
+
+  test "forks returns array of fork data" do
+    forks = [
+      { id: 1, owner: { login: "forker1" }, full_name: "forker1/testrepo" },
+      { id: 2, owner: { login: "forker2" }, full_name: "forker2/testrepo" }
+    ]
+
+    stub_request(:get, "https://api.github.com/repos/testowner/testrepo/forks")
+      .to_return(
+        status: 200,
+        body: forks.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    result = @client.forks("testowner", "testrepo")
+
+    assert_equal 2, result.size
+    assert_equal "forker1", result[0]["owner"]["login"]
+  end
+
+  test "forks returns empty array on error" do
+    stub_request(:get, "https://api.github.com/repos/testowner/testrepo/forks")
+      .to_return(status: 404, body: { message: "Not Found" }.to_json)
+
+    result = @client.forks("testowner", "testrepo")
+
+    assert_equal [], result
+  end
+
+  # === User Tests ===
+
+  test "user returns user details" do
+    user_data = {
+      login: "testuser",
+      id: 12345,
+      created_at: "2020-01-01T00:00:00Z",
+      public_repos: 25,
+      followers: 100
+    }
+
+    stub_request(:get, "https://api.github.com/users/testuser")
+      .to_return(
+        status: 200,
+        body: user_data.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    result = @client.user("testuser")
+
+    assert_equal "testuser", result["login"]
+    assert_equal 25, result["public_repos"]
+    assert_equal 100, result["followers"]
+  end
+
+  test "user returns nil on error" do
+    stub_request(:get, "https://api.github.com/users/nonexistent")
+      .to_return(status: 404, body: { message: "Not Found" }.to_json)
+
+    result = @client.user("nonexistent")
+
+    assert_nil result
+  end
+
+  # === User Events Tests ===
+
+  test "user_events returns array of public events" do
+    events = [
+      { type: "PushEvent", created_at: "2024-01-15T10:00:00Z" },
+      { type: "CreateEvent", created_at: "2024-01-14T10:00:00Z" }
+    ]
+
+    stub_request(:get, "https://api.github.com/users/testuser/events/public")
+      .to_return(
+        status: 200,
+        body: events.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    result = @client.user_events("testuser")
+
+    assert_equal 2, result.size
+    assert_equal "PushEvent", result[0]["type"]
+  end
+
+  test "user_events returns empty array on error" do
+    stub_request(:get, "https://api.github.com/users/testuser/events/public")
+      .to_return(status: 500, body: "Error")
+
+    result = @client.user_events("testuser")
+
+    assert_equal [], result
+  end
+
+  # === Rate Limit Tests ===
+
+  test "rate_limit returns rate limit info" do
+    rate_data = {
+      rate: { limit: 5000, remaining: 4999, reset: 1234567890 }
+    }
+
+    stub_request(:get, "https://api.github.com/rate_limit")
+      .to_return(
+        status: 200,
+        body: rate_data.to_json,
+        headers: { "Content-Type" => "application/json" }
+      )
+
+    result = @client.rate_limit
+
+    assert_equal 5000, result["rate"]["limit"]
+    assert_equal 4999, result["rate"]["remaining"]
+  end
+
+  test "rate_limit returns default on error" do
+    stub_request(:get, "https://api.github.com/rate_limit")
+      .to_return(status: 500, body: "Error")
+
+    result = @client.rate_limit
+
+    assert_equal 0, result["rate"]["remaining"]
+  end
 end

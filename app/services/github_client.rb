@@ -93,6 +93,50 @@ class GithubClient
     get("/search/repositories", q: query, sort: sort, order: "desc", per_page: per_page)
   end
 
+  # Fetch stargazers with timestamps (requires special Accept header)
+  # Returns array of { user: {...}, starred_at: "ISO8601" }
+  def stargazers(owner, name, per_page: 100, page: 1)
+    get_with_header(
+      "/repos/#{owner}/#{name}/stargazers",
+      { per_page: per_page, page: page },
+      "application/vnd.github.v3.star+json"
+    )
+  rescue StandardError => e
+    Rails.logger.warn("Failed to fetch stargazers for #{owner}/#{name}: #{e.message}")
+    []
+  end
+
+  # Fetch forkers (users who forked the repo)
+  def forks(owner, name, per_page: 100, page: 1)
+    get("/repos/#{owner}/#{name}/forks", per_page: per_page, page: page, sort: "newest")
+  rescue StandardError => e
+    Rails.logger.warn("Failed to fetch forks for #{owner}/#{name}: #{e.message}")
+    []
+  end
+
+  # Fetch user details for quality scoring
+  def user(username)
+    get("/users/#{username}")
+  rescue StandardError => e
+    Rails.logger.warn("Failed to fetch user #{username}: #{e.message}")
+    nil
+  end
+
+  # Fetch user's recent activity (events)
+  def user_events(username, per_page: 30)
+    get("/users/#{username}/events/public", per_page: per_page)
+  rescue StandardError => e
+    Rails.logger.warn("Failed to fetch events for #{username}: #{e.message}")
+    []
+  end
+
+  # Get rate limit status
+  def rate_limit
+    get("/rate_limit")
+  rescue StandardError
+    { "rate" => { "remaining" => 0 } }
+  end
+
   class RateLimitError < StandardError; end
   class RepoNotFoundError < StandardError; end
 
@@ -119,5 +163,22 @@ class GithubClient
     }
   rescue JSON::ParserError
     { status: response&.code.to_i, body: {} }
+  end
+
+  def get_with_header(path, params = {}, accept_header = "application/vnd.github.v3+json")
+    uri = URI("#{BASE_URL}#{path}")
+    uri.query = URI.encode_www_form(params) if params.any?
+
+    request = Net::HTTP::Get.new(uri)
+    request["Authorization"] = "Bearer #{@token}" if @token
+    request["Accept"] = accept_header
+
+    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(request) }
+
+    raise RateLimitError, "GitHub API rate limit exceeded" if response.code.to_i == 403
+
+    JSON.parse(response.body)
+  rescue JSON::ParserError
+    []
   end
 end
