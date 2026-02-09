@@ -33,5 +33,10 @@ FactoryBot.define do
       score_at_eval { 75.0 }
       last_verified_at { 1.day.ago }
     end
+
+    trait :with_api do
+      api_endpoint { "https://api.example.com/agent" }
+      api_key { "test-api-key-123" }
+    end
   end
 end
