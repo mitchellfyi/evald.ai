@@ -63,7 +63,7 @@ gem "secure_headers", "~> 6.5"
 gem "faraday", "~> 2.9"
 
 # Pagination
-gem "pagy", "~> 6.0"
+gem "pagy", "~> 43.2"
 
 # Production logging
 gem "lograge"
