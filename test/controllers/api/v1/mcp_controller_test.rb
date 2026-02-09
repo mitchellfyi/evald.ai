@@ -6,6 +6,19 @@ class Api::V1::McpControllerTest < ActionDispatch::IntegrationTest
     @agent1 = create(:agent, :published, :with_score, name: "Alpha Agent", slug: "alpha-agent", category: "coding")
     @agent2 = create(:agent, :published, :with_score, name: "Beta Agent", slug: "beta-agent", category: "research", score: 85.0, score_at_eval: 85.0)
     @agent3 = create(:agent, :published, :with_score, name: "Gamma Agent", slug: "gamma-agent", category: "coding", score: 60.0, score_at_eval: 60.0)
+    @api_key = create(:api_key)
+  end
+
+  # ============================================
+  # Authentication Tests
+  # ============================================
+
+  test "returns unauthorized without API key" do
+    post api_v1_mcp_url,
+         params: { jsonrpc: "2.0", id: 1, method: "ping" }.to_json,
+         headers: { "CONTENT_TYPE" => "application/json" }
+
+    assert_response :unauthorized
   end
 
   # ============================================
@@ -13,7 +26,7 @@ class Api::V1::McpControllerTest < ActionDispatch::IntegrationTest
   # ============================================
 
   test "returns parse error for invalid JSON" do
-    post api_v1_mcp_url, params: "{invalid", headers: { "CONTENT_TYPE" => "application/json", "RAW_POST_DATA" => "{invalid" }
+    post api_v1_mcp_url, params: "{invalid", headers: auth_headers.merge("RAW_POST_DATA" => "{invalid")
 
     assert_response :success
     json = JSON.parse(response.body)
@@ -41,6 +54,35 @@ class Api::V1::McpControllerTest < ActionDispatch::IntegrationTest
     assert_equal "2.0", json["jsonrpc"]
     assert_equal 1, json["id"]
     assert_equal({}, json["result"])
+  end
+
+  test "returns invalid request for non-object batch element" do
+    post api_v1_mcp_url,
+         params: [
+           "not an object",
+           { jsonrpc: "2.0", id: 1, method: "ping" }
+         ].to_json,
+         headers: auth_headers
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_kind_of Array, json
+    # First element should be an error with nil id
+    assert_equal(-32600, json[0]["error"]["code"])
+    assert_nil json[0]["id"]
+  end
+
+  test "returns invalid params for non-object arguments" do
+    post_mcp({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "tools/call",
+      params: { name: "get_agent_score", arguments: "not-an-object" }
+    })
+
+    json = JSON.parse(response.body)
+    assert_equal(-32602, json["error"]["code"])
+    assert_match(/arguments must be an object/, json["error"]["message"])
   end
 
   # ============================================
@@ -151,6 +193,15 @@ class Api::V1::McpControllerTest < ActionDispatch::IntegrationTest
     json = JSON.parse(response.body)
     content = json["result"]["content"].first
     assert content["isError"]
+  end
+
+  test "compare_agents errors when fewer than two agents found" do
+    post_mcp_tool("compare_agents", { agents: ["alpha-agent", "nonexistent-agent"] })
+
+    json = JSON.parse(response.body)
+    content = json["result"]["content"].first
+    assert content["isError"]
+    assert_match(/missing agents/i, JSON.parse(content["text"])["error"])
   end
 
   # ============================================
@@ -312,7 +363,7 @@ class Api::V1::McpControllerTest < ActionDispatch::IntegrationTest
            { jsonrpc: "2.0", id: 1, method: "ping" },
            { jsonrpc: "2.0", id: 2, method: "tools/list" }
          ].to_json,
-         headers: { "CONTENT_TYPE" => "application/json" }
+         headers: auth_headers
 
     assert_response :success
     json = JSON.parse(response.body)
@@ -322,10 +373,14 @@ class Api::V1::McpControllerTest < ActionDispatch::IntegrationTest
 
   private
 
+  def auth_headers
+    { "CONTENT_TYPE" => "application/json", "Authorization" => "Bearer #{@api_key.token}" }
+  end
+
   def post_mcp(body)
     post api_v1_mcp_url,
          params: body.to_json,
-         headers: { "CONTENT_TYPE" => "application/json" }
+         headers: auth_headers
   end
 
   def post_mcp_tool(tool_name, arguments)

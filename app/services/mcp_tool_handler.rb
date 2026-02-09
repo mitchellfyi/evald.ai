@@ -149,7 +149,20 @@ class McpToolHandler
     return error_content("At least two agent IDs are required") if slugs.size < 2
 
     agents = Agent.published.where(slug: slugs)
-    return error_content("No matching agents found") if agents.empty?
+
+    if agents.size < 2
+      found_slugs = agents.map(&:slug)
+      missing_slugs = slugs - found_slugs
+
+      message =
+        if agents.empty?
+          "No matching agents found for IDs: #{slugs.join(', ')}"
+        else
+          "At least two valid agents are required; missing agents for IDs: #{missing_slugs.join(', ')}"
+        end
+
+      return error_content(message)
+    end
 
     task_domain = args["task_domain"]
 
@@ -239,11 +252,11 @@ class McpToolHandler
     end
 
     limit = [args["limit"]&.to_i || 20, 50].min
-    agents = agents.limit(limit)
+    records = agents.limit(limit).to_a
 
     result = {
-      count: agents.size,
-      agents: agents.map { |a| agent_search_result(a) }
+      count: records.length,
+      agents: records.map { |a| agent_search_result(a) }
     }
 
     success_content(result)

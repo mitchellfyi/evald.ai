@@ -2,6 +2,8 @@
 module Api
   module V1
     class McpController < BaseController
+      include ApiAuthenticatable
+
       # POST /api/v1/mcp
       # Handles MCP (Model Context Protocol) JSON-RPC 2.0 messages
       # Supports: initialize, tools/list, tools/call
@@ -38,9 +40,9 @@ module Api
       end
 
       def process_message(msg)
-        return render_jsonrpc_error(msg["id"], -32600, "Invalid Request") unless valid_jsonrpc?(msg)
+        id = msg.is_a?(Hash) ? msg["id"] : nil
+        return render_jsonrpc_error(id, -32600, "Invalid Request") unless valid_jsonrpc?(msg)
 
-        id = msg["id"]
         method = msg["method"]
         params = msg["params"] || {}
 
@@ -79,11 +81,20 @@ module Api
 
       def handle_tools_call(id, params)
         tool_name = params["name"]
-        arguments = params["arguments"] || {}
+        raw_arguments = params["arguments"]
 
         unless tool_name.present?
           return render_jsonrpc_error(id, -32602, "Invalid params: tool name required")
         end
+
+        arguments =
+          if raw_arguments.nil?
+            {}
+          elsif raw_arguments.is_a?(Hash)
+            raw_arguments
+          else
+            return render_jsonrpc_error(id, -32602, "Invalid params: arguments must be an object")
+          end
 
         content = handler.call_tool(tool_name, arguments)
         is_error = content.any? { |c| c[:isError] }

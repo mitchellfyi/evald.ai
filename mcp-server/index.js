@@ -267,6 +267,10 @@ async function handleMessage(line) {
           process.stdout.write(
             jsonrpcError(id, apiResponse.error.code, apiResponse.error.message) + "\n"
           );
+        } else {
+          process.stdout.write(
+            jsonrpcError(id, -32603, "Unexpected response from Evald API") + "\n"
+          );
         }
       } catch (err) {
         process.stdout.write(

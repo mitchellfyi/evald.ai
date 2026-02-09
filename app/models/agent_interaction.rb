@@ -3,10 +3,10 @@ class AgentInteraction < ApplicationRecord
   belongs_to :reporter_agent, class_name: "Agent"
   belongs_to :target_agent, class_name: "Agent"
 
-  validates :interaction_type, presence: true
-  validates :outcome, presence: true
-
   INTERACTION_TYPES = %w[delegation collaboration query verification task_execution].freeze
+
+  validates :interaction_type, presence: true, inclusion: { in: INTERACTION_TYPES }
+  validates :outcome, presence: true
 
   scope :for_target, ->(agent) { where(target_agent: agent) }
   scope :for_reporter, ->(agent) { where(reporter_agent: agent) }
