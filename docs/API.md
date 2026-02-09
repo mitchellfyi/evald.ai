@@ -31,8 +31,83 @@ Response:
 #### Get Agent
 `GET /api/v1/agents/:id`
 
+Response includes domain-specific scores:
+```json
+{
+  "agent": "devin",
+  "name": "Devin",
+  "score": 84,
+  "confidence": "high",
+  "domain_scores": {
+    "coding": {
+      "score": 91,
+      "confidence": "high",
+      "evals_run": 12
+    },
+    "research": {
+      "score": 67,
+      "confidence": "low",
+      "evals_run": 2
+    }
+  },
+  "primary_domain": "coding",
+  "tier0": { ... },
+  "tier1": { ... }
+}
+```
+
 #### Get Agent Score
 `GET /api/v1/agents/:id/score`
+
+Response:
+```json
+{
+  "agent": "devin",
+  "score": 84,
+  "confidence": "high",
+  "domain_scores": {
+    "coding": { "score": 91, "confidence": "high", "evals_run": 12 },
+    "research": { "score": 67, "confidence": "low", "evals_run": 2 }
+  },
+  "primary_domain": "coding",
+  "tier0": { ... },
+  "tier1": { ... },
+  "last_verified": "2026-02-01T00:00:00Z"
+}
+```
+
+#### Compare Agents
+`GET /api/v1/agents/compare`
+
+Parameters:
+- `agents` (string) - Comma-separated agent slugs (max 5)
+- `task` or `domain` (string) - Filter comparison by domain (coding, research, workflow)
+
+When a domain filter is provided, the recommendation is based on domain-specific scores.
+
+Response:
+```json
+{
+  "task": "coding",
+  "agents": [...],
+  "recommendation": {
+    "recommended": "devin",
+    "reason": "Highest Coding domain score (91) among compared agents"
+  }
+}
+```
+
+#### Search Agents
+`GET /api/v1/agents/search`
+
+Parameters:
+- `q` (string) - Search query
+- `capability` (string) - Filter by category
+- `min_score` (integer) - Minimum Evald Score
+- `domain` (string) - Filter by target domain (coding, research, workflow)
+- `primary_domain` (string) - Filter by primary domain
+
+Results are ordered by domain score when domain filter is provided.
 
 ### API Keys
 

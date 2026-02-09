@@ -26,10 +26,13 @@ class Agent < ApplicationRecord
   scope :by_category, ->(cat) { where(category: cat) }
   scope :high_score, ->(min = 80) { where("score >= ?", min) }
   scope :recently_verified, -> { where("last_verified_at > ?", 30.days.ago) }
+  scope :by_domain, ->(domain) { where("? = ANY(target_domains)", domain) }
+  scope :by_primary_domain, ->(domain) { where(primary_domain: domain) }
 
   CATEGORIES = %w[ coding research workflow assistant general ].freeze
   CLAIM_STATUSES = %w[ unclaimed claimed verified ].freeze
   DECAY_RATES = %w[ standard slow fast ].freeze
+  DOMAINS = %w[ coding research workflow ].freeze # Evaluatable domains
 
   # Tier 0 signal weights
   TIER0_WEIGHTS = {
@@ -56,11 +59,20 @@ class Agent < ApplicationRecord
   end
 
   def compute_score!
+    # First, compute domain-specific scores from eval runs
+    compute_domain_scores!
+
     tier0 = compute_tier0_score
     tier1 = compute_tier1_score
 
     # Weighted combination: Tier0 = 40%, Tier1 = 60%
-    if tier1.present?
+    # If domain scores available, use domain-weighted score for Tier1 portion
+    domain_score = domain_weighted_score
+
+    if domain_score.present?
+      # Domain-weighted score takes precedence as it's more granular
+      self.score = (tier0 * 0.4) + (domain_score * 0.6)
+    elsif tier1.present?
       self.score = (tier0 * 0.4) + (tier1 * 0.6)
     else
       self.score = tier0
@@ -126,6 +138,102 @@ class Agent < ApplicationRecord
       scope_discipline: tier1_scope_discipline&.to_f,
       safety: tier1_safety&.to_f
     }.compact
+  end
+
+  # Domain-specific scoring methods
+  def domain_scores
+    DOMAINS.each_with_object({}) do |domain, result|
+      score = send("#{domain}_score")
+      evals_count = send("#{domain}_evals_count") || 0
+      next unless score.present? || evals_count > 0
+
+      result[domain] = {
+        score: score&.to_f,
+        confidence: domain_confidence(domain),
+        evals_run: evals_count
+      }
+    end
+  end
+
+  def domain_confidence(domain)
+    evals_count = send("#{domain}_evals_count") || 0
+    case evals_count
+    when 0 then "insufficient"
+    when 1..2 then "low"
+    when 3..5 then "medium"
+    else "high"
+    end
+  end
+
+  def effective_domains
+    # Return agent's target domains, or infer from eval history
+    return target_domains if target_domains.present?
+
+    DOMAINS.select do |domain|
+      (send("#{domain}_evals_count") || 0) > 0
+    end
+  end
+
+  def compute_domain_scores!
+    DOMAINS.each do |domain|
+      runs = eval_runs.completed.joins(:eval_task).where(eval_tasks: { category: domain })
+      next if runs.empty?
+
+      scores = runs.filter_map { |run| run.metrics&.dig("score")&.to_f }
+      next if scores.empty?
+
+      avg_score = scores.sum / scores.size
+      send("#{domain}_score=", avg_score.round(2))
+      send("#{domain}_evals_count=", runs.count)
+    end
+
+    # Auto-detect primary domain if not set
+    self.primary_domain ||= detect_primary_domain
+    save!
+  end
+
+  def detect_primary_domain
+    # Find domain with highest eval count, or highest score if tied
+    best_domain = nil
+    best_count = 0
+    best_score = 0
+
+    DOMAINS.each do |domain|
+      count = send("#{domain}_evals_count") || 0
+      score = send("#{domain}_score") || 0
+
+      if count > best_count || (count == best_count && score > best_score)
+        best_domain = domain
+        best_count = count
+        best_score = score
+      end
+    end
+
+    best_domain
+  end
+
+  def domain_weighted_score
+    # Composite score weighted by agent's relevant domains only
+    domains = effective_domains
+    return nil if domains.empty?
+
+    total_score = 0
+    total_weight = 0
+
+    domains.each do |domain|
+      domain_score = send("#{domain}_score")
+      next unless domain_score.present?
+
+      # Weight by eval count (more evals = higher confidence = higher weight)
+      evals_count = send("#{domain}_evals_count") || 1
+      weight = [evals_count, 10].min # Cap weight at 10
+      total_score += domain_score * weight
+      total_weight += weight
+    end
+
+    return nil if total_weight.zero?
+
+    (total_score / total_weight).round(2)
   end
 
   def badge_color

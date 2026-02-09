@@ -264,4 +264,94 @@ class Api::V1::AgentsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, json.size
     assert_equal "alpha-agent", json.first["agent"]
   end
+
+  # ============================================
+  # Domain-Specific Scoring Tests
+  # ============================================
+
+  test "show includes domain_scores in response" do
+    @agent1.update!(coding_score: 91, coding_evals_count: 5, primary_domain: "coding")
+
+    get api_v1_agent_url(@agent1.slug), as: :json
+
+    json = JSON.parse(response.body)
+    assert json.key?("domain_scores")
+    assert json.key?("primary_domain")
+    assert_equal "coding", json["primary_domain"]
+
+    coding_domain = json["domain_scores"]["coding"]
+    assert_equal 91.0, coding_domain["score"]
+    assert_equal "medium", coding_domain["confidence"]
+    assert_equal 5, coding_domain["evals_run"]
+  end
+
+  test "score endpoint includes domain_scores" do
+    @agent1.update!(coding_score: 85, coding_evals_count: 10)
+
+    get score_api_v1_agent_url(@agent1.slug), as: :json
+
+    json = JSON.parse(response.body)
+    assert json.key?("domain_scores")
+    assert_equal 85.0, json["domain_scores"]["coding"]["score"]
+  end
+
+  test "compare uses domain score when domain filter provided" do
+    @agent1.update!(coding_score: 95, coding_evals_count: 10)
+    @agent2.update!(coding_score: 80, coding_evals_count: 5)
+
+    get compare_api_v1_agents_url, params: { agents: "alpha-agent,beta-agent", domain: "coding" }, as: :json
+
+    json = JSON.parse(response.body)
+    # alpha-agent should be recommended due to higher coding score
+    assert_equal "alpha-agent", json["recommendation"]["recommended"]
+    assert_includes json["recommendation"]["reason"], "Coding domain score"
+  end
+
+  test "compare includes domain_score when domain filter provided" do
+    @agent1.update!(coding_score: 88, coding_evals_count: 3)
+
+    get compare_api_v1_agents_url, params: { agents: "alpha-agent", domain: "coding" }, as: :json
+
+    json = JSON.parse(response.body)
+    agent = json["agents"].first
+    assert_equal 88.0, agent["domain_score"]
+    assert_equal "medium", agent["domain_confidence"]
+  end
+
+  test "search filters by domain" do
+    @agent1.update!(target_domains: %w[coding research])
+    @agent2.update!(target_domains: %w[research])
+
+    get search_api_v1_agents_url, params: { domain: "coding" }, as: :json
+
+    json = JSON.parse(response.body)
+    slugs = json.map { |a| a["agent"] }
+    assert_includes slugs, "alpha-agent"
+    assert_not_includes slugs, "beta-agent"
+  end
+
+  test "search filters by primary_domain" do
+    @agent1.update!(primary_domain: "coding")
+    @agent2.update!(primary_domain: "research")
+
+    get search_api_v1_agents_url, params: { primary_domain: "coding" }, as: :json
+
+    json = JSON.parse(response.body)
+    slugs = json.map { |a| a["agent"] }
+    assert_includes slugs, "alpha-agent"
+    assert_not_includes slugs, "beta-agent"
+  end
+
+  test "search orders by domain score when domain filter provided" do
+    @agent1.update!(target_domains: %w[coding], coding_score: 75, coding_evals_count: 5)
+    @agent2.update!(target_domains: %w[coding], coding_score: 90, coding_evals_count: 5)
+    @agent3.update!(target_domains: %w[coding], coding_score: 85, coding_evals_count: 5)
+
+    get search_api_v1_agents_url, params: { domain: "coding" }, as: :json
+
+    json = JSON.parse(response.body)
+    slugs = json.map { |a| a["agent"] }
+    # beta-agent (90) should come before gamma-agent (85) which should come before alpha-agent (75)
+    assert_equal %w[beta-agent gamma-agent alpha-agent], slugs
+  end
 end

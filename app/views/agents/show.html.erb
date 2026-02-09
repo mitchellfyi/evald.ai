@@ -127,6 +127,44 @@
     </div>
   <% end %>
 
+  <!-- Domain Scores -->
+  <% if @agent.domain_scores.present? %>
+  <div class="bg-white rounded-xl p-6 shadow mb-8">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-bold text-gray-900">Domain Scores</h2>
+      <% if @agent.primary_domain.present? %>
+        <span class="text-sm text-gray-500">Primary: <span class="font-medium text-gray-700"><%= @agent.primary_domain.titleize %></span></span>
+      <% end %>
+    </div>
+    
+    <div class="grid md:grid-cols-3 gap-6">
+      <% Agent::DOMAINS.each do |domain| %>
+        <% domain_data = @agent.domain_scores[domain] %>
+        <div class="text-center p-4 rounded-lg <%= domain == @agent.primary_domain ? 'bg-indigo-50 border-2 border-indigo-200' : 'bg-gray-50' %>">
+          <div class="text-3xl font-bold <%= domain_data&.dig(:score) ? score_color_class(domain_data[:score]) : 'text-gray-300' %>">
+            <%= domain_data&.dig(:score)&.round || '—' %>
+          </div>
+          <div class="text-gray-600 font-medium mt-1"><%= domain.titleize %></div>
+          <% if domain_data %>
+            <div class="flex items-center justify-center mt-2 space-x-2">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium <%= confidence_badge_class(domain_data[:confidence]) %>">
+                <%= domain_data[:confidence] %>
+              </span>
+              <span class="text-gray-400 text-xs"><%= domain_data[:evals_run] %> evals</span>
+            </div>
+          <% else %>
+            <div class="text-gray-400 text-xs mt-2">Not evaluated</div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+    
+    <p class="text-sm text-gray-500 mt-4">
+      The composite Evald Score is weighted by the agent's target domains. Domain scores show performance in specific evaluation categories.
+    </p>
+  </div>
+  <% end %>
+
   <!-- Score Breakdown -->
   <div class="grid md:grid-cols-2 gap-8 mb-8">
     <!-- Tier 0 -->

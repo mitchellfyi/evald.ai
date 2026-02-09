@@ -27,10 +27,13 @@ module Api
         slugs = params[:agents].to_s.split(",").map(&:strip).first(5)
         agents = Agent.published.where(slug: slugs)
 
+        # Filter by domain if task parameter provided (maps to domain)
+        domain = params[:task] || params[:domain]
+
         render json: {
-          task: params[:task],
-          agents: agents.map { |a| agent_detail(a) },
-          recommendation: recommend_agent(agents, params[:task])
+          task: domain,
+          agents: agents.map { |a| agent_comparison(a, domain) },
+          recommendation: recommend_agent(agents, domain)
         }
       end
 
@@ -39,10 +42,19 @@ module Api
 
         agents = agents.by_category(params[:capability]) if params[:capability].present?
         agents = agents.high_score(params[:min_score].to_i) if params[:min_score].present?
+        agents = agents.by_domain(params[:domain]) if params[:domain].present?
+        agents = agents.by_primary_domain(params[:primary_domain]) if params[:primary_domain].present?
 
         if params[:q].present?
           agents = agents.where("name ILIKE ? OR description ILIKE ?",
                                 "%#{params[:q]}%", "%#{params[:q]}%")
+        end
+
+        # Order by domain score if domain filter provided
+        if params[:domain].present? && Agent::DOMAINS.include?(params[:domain])
+          agents = agents.order(Arel.sql("#{params[:domain]}_score DESC NULLS LAST"))
+        else
+          agents = agents.order(score: :desc)
         end
 
         render json: agents.limit(20).map { |a| agent_summary(a) }
@@ -76,6 +88,8 @@ module Api
           score: agent.decayed_score&.to_f,
           score_at_eval: agent.score_at_eval&.to_f,
           confidence: agent.confidence_level,
+          domain_scores: agent.domain_scores,
+          primary_domain: agent.primary_domain,
           tier0: agent.tier0_summary,
           tier1: agent.tier1_summary,
           last_verified: agent.last_verified_at&.iso8601,
@@ -89,14 +103,46 @@ module Api
           agent: agent.slug,
           score: agent.decayed_score&.to_f,
           confidence: agent.confidence_level,
+          domain_scores: agent.domain_scores,
+          primary_domain: agent.primary_domain,
           tier0: agent.tier0_summary,
           tier1: agent.tier1_summary,
           last_verified: agent.last_verified_at&.iso8601
         }
       end
 
-      def recommend_agent(agents, task)
-        # Simple recommendation based on score and category match
+      def agent_comparison(agent, domain = nil)
+        base = agent_detail(agent)
+
+        # If domain filter provided, add domain-specific score prominently
+        if domain.present? && Agent::DOMAINS.include?(domain)
+          domain_data = agent.domain_scores[domain]
+          base[:domain_score] = domain_data&.dig(:score)
+          base[:domain_confidence] = domain_data&.dig(:confidence) || "insufficient"
+        end
+
+        base
+      end
+
+      def recommend_agent(agents, domain = nil)
+        return nil if agents.empty?
+
+        # If domain specified, rank by domain score
+        if domain.present? && Agent::DOMAINS.include?(domain)
+          best = agents.max_by do |a|
+            a.domain_scores.dig(domain, :score) || 0
+          end
+
+          domain_score = best.domain_scores.dig(domain, :score)
+          if domain_score.present?
+            return {
+              recommended: best.slug,
+              reason: "Highest #{domain.titleize} domain score (#{domain_score}) among compared agents"
+            }
+          end
+        end
+
+        # Fallback to overall score
         best = agents.max_by { |a| a.decayed_score || 0 }
         return nil unless best
 
