@@ -1,35 +1,40 @@
-name: Deploy to Dokku
+name: Rollback Deploy
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: 'Commit SHA to deploy (rollback target)'
+        required: true
+        type: string
 
 concurrency:
   group: deploy-production
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  rollback:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - name: Checkout
+      - name: Checkout target commit
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
+          ref: ${{ inputs.commit_sha }}
           fetch-depth: 0
 
-      - name: Deploy to Dokku
+      - name: Deploy rollback to Dokku
         uses: dokku/github-action@afc58cc34ada20644d45139972e712cbe4a69a24 # master
         with:
           git_remote_url: 'ssh://dokku@159.203.120.73:22/evald-ai'
           ssh_private_key: ${{ secrets.DOKKU_SSH_PRIVATE_KEY }}
+          git_push_flags: '--force'
 
-      - name: Deploy summary
+      - name: Rollback summary
         run: |
-          echo "## Deploy Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "## Rollback Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Rolled back to:** \`${{ inputs.commit_sha }}\`" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment:** production" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp:** $(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_STEP_SUMMARY
           echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
