@@ -21,6 +21,18 @@ class GithubClient
     get("/repos/#{owner}/#{name}/contributors")
   end
 
+  def security_advisories(owner, name)
+    get("/repos/#{owner}/#{name}/vulnerability-alerts") rescue []
+  end
+
+  def dependabot_alerts(owner, name)
+    get("/repos/#{owner}/#{name}/dependabot/alerts") rescue []
+  end
+
+  def contents(owner, name, path)
+    get("/repos/#{owner}/#{name}/contents/#{path}") rescue nil
+  end
+
   private
 
   def get(path, params = {})
