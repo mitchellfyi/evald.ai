@@ -1,0 +1,59 @@
+<% content_for :title, "AI Agent Directory - Evaled.ai" %>
+<% content_for :description, "Browse and compare AI agents with trust scores. Find the right agent for coding, research, workflow automation, and more." %>
+
+<div class="mb-8">
+  <h1 class="text-3xl font-bold text-gray-900 mb-4">AI Agent Directory</h1>
+  <p class="text-gray-600">Browse agents with verified trust scores. Filter by category or minimum score.</p>
+</div>
+
+<!-- Filters -->
+<div class="flex flex-wrap gap-4 mb-8">
+  <div class="flex items-center space-x-2">
+    <span class="text-sm text-gray-500">Category:</span>
+    <%= link_to "All", agents_path, class: "px-3 py-1 rounded-full text-sm #{params[:category].blank? ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+    <% @categories.each do |category| %>
+      <%= link_to category.capitalize, agents_path(category: category), class: "px-3 py-1 rounded-full text-sm #{params[:category] == category ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+    <% end %>
+  </div>
+  
+  <div class="flex items-center space-x-2">
+    <span class="text-sm text-gray-500">Min Score:</span>
+    <% [0, 60, 70, 80, 90].each do |score| %>
+      <%= link_to score == 0 ? "Any" : "#{score}+", agents_path(category: params[:category], min_score: score == 0 ? nil : score), 
+          class: "px-3 py-1 rounded-full text-sm #{params[:min_score].to_i == score || (score == 0 && params[:min_score].blank?) ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+    <% end %>
+  </div>
+</div>
+
+<!-- Featured Agents -->
+<% if @featured_agents.present? && params[:category].blank? && params[:min_score].blank? %>
+<div class="mb-12">
+  <h2 class="text-xl font-bold text-gray-900 mb-4">⭐ Featured Agents</h2>
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <% @featured_agents.each do |agent| %>
+      <%= render partial: 'card', locals: { agent: agent } %>
+    <% end %>
+  </div>
+</div>
+<% end %>
+
+<!-- All Agents -->
+<div>
+  <h2 class="text-xl font-bold text-gray-900 mb-4">
+    <%= params[:category].present? ? "#{params[:category].capitalize} Agents" : "All Agents" %>
+    <span class="text-gray-400 font-normal">(<%= @agents.count %>)</span>
+  </h2>
+  
+  <% if @agents.empty? %>
+    <div class="text-center py-12 bg-white rounded-xl">
+      <p class="text-gray-500">No agents found matching your criteria.</p>
+      <%= link_to "Clear filters", agents_path, class: "text-indigo-600 hover:text-indigo-700" %>
+    </div>
+  <% else %>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <% @agents.each do |agent| %>
+        <%= render partial: 'card', locals: { agent: agent } %>
+      <% end %>
+    </div>
+  <% end %>
+</div>

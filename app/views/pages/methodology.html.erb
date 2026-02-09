@@ -1,0 +1,209 @@
+<% content_for :title, "Evaluation Methodology - Evaled.ai" %>
+<% content_for :description, "Learn how Evaled.ai evaluates AI agents through tiered assessments - from passive signals to task completion to behavioral testing." %>
+
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-4xl font-bold text-gray-900 mb-8">Evaluation Methodology</h1>
+  
+  <p class="text-xl text-gray-600 mb-12">
+    Every agent gets an Evaled Score (0-100) computed from multiple tiers of evaluation. 
+    Each tier adds depth, and scores decay over time to ensure freshness.
+  </p>
+
+  <!-- Tier 0 -->
+  <div class="bg-white rounded-xl p-8 shadow mb-8">
+    <div class="flex items-center mb-6">
+      <span class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full text-lg font-medium">Tier 0</span>
+      <span class="ml-4 text-gray-500">Passive Signals • Automated • No cooperation needed</span>
+    </div>
+    
+    <p class="text-gray-600 mb-6">
+      We scrape public data and compute trust signals from what's already available. 
+      Every agent with a public repo gets a Tier 0 profile automatically.
+    </p>
+    
+    <table class="w-full">
+      <thead>
+        <tr class="border-b border-gray-200">
+          <th class="text-left py-3 text-gray-900 font-medium">Signal</th>
+          <th class="text-left py-3 text-gray-900 font-medium">What We Measure</th>
+          <th class="text-right py-3 text-gray-900 font-medium">Weight</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-600">
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-medium">Repo Health</td>
+          <td class="py-3">Commit recency, frequency, open issue ratio, PR turnaround</td>
+          <td class="py-3 text-right">20%</td>
+        </tr>
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-medium">Bus Factor</td>
+          <td class="py-3">Number of active contributors, commit distribution</td>
+          <td class="py-3 text-right">10%</td>
+        </tr>
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-medium">Dependency Risk</td>
+          <td class="py-3">Known CVEs, outdated packages, dependency depth</td>
+          <td class="py-3 text-right">15%</td>
+        </tr>
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-medium">Documentation</td>
+          <td class="py-3">README completeness, API docs, examples, changelog</td>
+          <td class="py-3 text-right">20%</td>
+        </tr>
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-medium">Community</td>
+          <td class="py-3">Stars, forks (weighted by account age, bot-filtered)</td>
+          <td class="py-3 text-right">15%</td>
+        </tr>
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-medium">License</td>
+          <td class="py-3">OSI-approved license present and unambiguous</td>
+          <td class="py-3 text-right">10%</td>
+        </tr>
+        <tr>
+          <td class="py-3 font-medium">Maintenance</td>
+          <td class="py-3">Days since last commit, release cadence, issue response</td>
+          <td class="py-3 text-right">10%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Tier 1 -->
+  <div class="bg-white rounded-xl p-8 shadow mb-8">
+    <div class="flex items-center mb-6">
+      <span class="bg-green-100 text-green-700 px-4 py-2 rounded-full text-lg font-medium">Tier 1</span>
+      <span class="ml-4 text-gray-500">Task Completion • Automated • We run the agent</span>
+    </div>
+    
+    <p class="text-gray-600 mb-6">
+      We deploy agents against standardized task suites and measure real performance. 
+      Results are versioned — you can see how an agent performs across releases.
+    </p>
+    
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Task Categories</h3>
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <div class="bg-gray-50 rounded-lg p-4">
+        <h4 class="font-medium text-gray-900 mb-2">Coding Agents</h4>
+        <ul class="text-gray-600 text-sm space-y-1">
+          <li>• Bug fixes (syntax → logic → architectural)</li>
+          <li>• Feature implementation from spec</li>
+          <li>• Refactoring with correctness preservation</li>
+          <li>• Test generation and coverage</li>
+        </ul>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <h4 class="font-medium text-gray-900 mb-2">Research Agents</h4>
+        <ul class="text-gray-600 text-sm space-y-1">
+          <li>• Factual retrieval accuracy</li>
+          <li>• Multi-source synthesis</li>
+          <li>• Citation accuracy</li>
+          <li>• Hallucination rate</li>
+        </ul>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <h4 class="font-medium text-gray-900 mb-2">Workflow Agents</h4>
+        <ul class="text-gray-600 text-sm space-y-1">
+          <li>• Task completion rate</li>
+          <li>• Instruction adherence</li>
+          <li>• Error handling</li>
+          <li>• Escalation behavior</li>
+        </ul>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-4">
+        <h4 class="font-medium text-gray-900 mb-2">All Categories</h4>
+        <ul class="text-gray-600 text-sm space-y-1">
+          <li>• Completion rate</li>
+          <li>• Accuracy vs ground truth</li>
+          <li>• Cost efficiency (tokens, time)</li>
+          <li>• Scope discipline & safety</li>
+        </ul>
+      </div>
+    </div>
+    
+    <table class="w-full">
+      <thead>
+        <tr class="border-b border-gray-200">
+          <th class="text-left py-3 text-gray-900 font-medium">Metric</th>
+          <th class="text-left py-3 text-gray-900 font-medium">Description</th>
+          <th class="text-right py-3 text-gray-900 font-medium">Weight</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-600">
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-medium">Completion Rate</td>
+          <td class="py-3">Did the agent finish the task?</td>
+          <td class="py-3 text-right">25%</td>
+        </tr>
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-medium">Accuracy</td>
+          <td class="py-3">Was the output correct?</td>
+          <td class="py-3 text-right">30%</td>
+        </tr>
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-medium">Cost Efficiency</td>
+          <td class="py-3">Tokens consumed and time elapsed</td>
+          <td class="py-3 text-right">15%</td>
+        </tr>
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-medium">Scope Discipline</td>
+          <td class="py-3">Did it stay within stated capabilities?</td>
+          <td class="py-3 text-right">15%</td>
+        </tr>
+        <tr>
+          <td class="py-3 font-medium">Safety</td>
+          <td class="py-3">Respects boundaries, permissions, constraints</td>
+          <td class="py-3 text-right">15%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Score Decay -->
+  <div class="bg-white rounded-xl p-8 shadow mb-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Score Decay</h2>
+    <p class="text-gray-600 mb-6">
+      Evaled Scores decay over time. An agent that scored 92 six months ago but hasn't been re-evaluated 
+      shows a decayed score with a <code class="bg-gray-100 px-1 rounded">last_verified</code> timestamp. 
+      Trust isn't permanent.
+    </p>
+    
+    <div class="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+<pre><code>{
+  "agent": "acme-code-agent",
+  "score": 87,
+  "score_at_eval": 92,
+  "last_verified": "2026-01-15T00:00:00Z",
+  "decay_rate": "standard",
+  "next_eval_scheduled": "2026-03-15T00:00:00Z"
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- Roadmap -->
+  <div class="bg-white rounded-xl p-8 shadow">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Roadmap</h2>
+    <div class="space-y-3">
+      <div class="flex items-center">
+        <span class="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-3">✓</span>
+        <span class="text-gray-700">Tier 0 — Passive signal scoring from public repos</span>
+      </div>
+      <div class="flex items-center">
+        <span class="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-3">✓</span>
+        <span class="text-gray-700">Tier 1 — Automated task completion evals</span>
+      </div>
+      <div class="flex items-center">
+        <span class="w-6 h-6 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mr-3">○</span>
+        <span class="text-gray-500">Tier 2 — Behavioral and safety evals (adversarial testing)</span>
+      </div>
+      <div class="flex items-center">
+        <span class="w-6 h-6 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mr-3">○</span>
+        <span class="text-gray-500">Tier 3 — Production telemetry integration (opt-in SDK)</span>
+      </div>
+      <div class="flex items-center">
+        <span class="w-6 h-6 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mr-3">○</span>
+        <span class="text-gray-500">Tier 4 — Security audits and compliance checks</span>
+      </div>
+    </div>
+  </div>
+</div>

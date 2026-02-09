@@ -1,0 +1,109 @@
+<% content_for :title, "Evaled.ai - The Trust Score for AI Agents" %>
+<% content_for :description, "Evaled continuously evaluates AI agents so you don't have to. Every agent gets a public trust profile built from real data — not benchmarks, not stars, not vibes." %>
+
+<!-- Hero Section -->
+<div class="text-center py-16">
+  <h1 class="text-5xl font-bold text-gray-900 mb-4">
+    The trust score for AI agents.
+  </h1>
+  <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+    Evaled continuously evaluates open-source and commercial AI agents so you don't have to. 
+    Every agent gets a public trust profile built from real data — not self-reported benchmarks, not GitHub stars, not vibes.
+  </p>
+  <div class="flex justify-center space-x-4">
+    <%= link_to "Browse Agents", agents_path, class: "px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition" %>
+    <%= link_to "How It Works", methodology_path, class: "px-6 py-3 bg-white text-indigo-600 font-medium rounded-lg border border-indigo-200 hover:border-indigo-300 transition" %>
+  </div>
+</div>
+
+<!-- Score Example -->
+<div class="bg-white rounded-xl shadow-lg p-8 max-w-2xl mx-auto my-12">
+  <h3 class="text-lg font-medium text-gray-500 mb-4">Example API Response</h3>
+  <pre class="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto"><code>curl https://api.evaled.ai/v1/agents/devin/score
+
+{
+  "agent": "devin",
+  "score": 84,
+  "tier0": {
+    "repo_health": 91,
+    "dependency_risk": 78,
+    "documentation": 88,
+    "maintenance_pulse": 85
+  },
+  "tier1": {
+    "completion_rate": 0.82,
+    "accuracy": 0.79,
+    "cost_efficiency": 0.71,
+    "scope_discipline": 0.93,
+    "safety": 0.96
+  },
+  "last_verified": "2026-02-01T00:00:00Z"
+}</code></pre>
+</div>
+
+<!-- How It Works -->
+<div class="py-16">
+  <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">How Evaled Works</h2>
+  
+  <div class="grid md:grid-cols-2 gap-8">
+    <!-- Tier 0 -->
+    <div class="bg-white rounded-xl p-8 shadow">
+      <div class="flex items-center mb-4">
+        <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">Tier 0</span>
+        <span class="ml-3 text-gray-500 text-sm">Automated • No cooperation needed</span>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-4">Passive Signals</h3>
+      <p class="text-gray-600 mb-4">We scrape public data and compute trust signals from what's already out there.</p>
+      <ul class="space-y-2 text-gray-600">
+        <li class="flex items-center"><span class="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>Repo health & commit patterns</li>
+        <li class="flex items-center"><span class="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>Bus factor & contributor distribution</li>
+        <li class="flex items-center"><span class="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>Dependency risk & CVEs</li>
+        <li class="flex items-center"><span class="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>Documentation quality</li>
+        <li class="flex items-center"><span class="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>Community signal (bot-filtered)</li>
+      </ul>
+    </div>
+
+    <!-- Tier 1 -->
+    <div class="bg-white rounded-xl p-8 shadow">
+      <div class="flex items-center mb-4">
+        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">Tier 1</span>
+        <span class="ml-3 text-gray-500 text-sm">Automated • We run the agent</span>
+      </div>
+      <h3 class="text-xl font-bold text-gray-900 mb-4">Task Completion Evals</h3>
+      <p class="text-gray-600 mb-4">We deploy agents against standardized task suites and measure real performance.</p>
+      <ul class="space-y-2 text-gray-600">
+        <li class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Completion rate</li>
+        <li class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Accuracy against ground truth</li>
+        <li class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Cost efficiency (tokens, time)</li>
+        <li class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Scope discipline</li>
+        <li class="flex items-center"><span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>Safety behavior</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Top Agents -->
+<% if @top_agents.present? %>
+<div class="py-16">
+  <h2 class="text-3xl font-bold text-center text-gray-900 mb-8">Top Rated Agents</h2>
+  
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <% @top_agents.each do |agent| %>
+      <%= render partial: 'agents/card', locals: { agent: agent } %>
+    <% end %>
+  </div>
+  
+  <div class="text-center mt-8">
+    <%= link_to "View All Agents →", agents_path, class: "text-indigo-600 hover:text-indigo-700 font-medium" %>
+  </div>
+</div>
+<% end %>
+
+<!-- Badge CTA -->
+<div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-8 text-center text-white my-16">
+  <h2 class="text-2xl font-bold mb-4">Add Your Evaled Score to Your README</h2>
+  <p class="text-indigo-100 mb-6">Show users your agent's trust score with an embeddable badge.</p>
+  <div class="bg-white/10 rounded-lg p-4 max-w-xl mx-auto">
+    <code class="text-sm">[![Evaled Score](https://evaled.ai/agents/YOUR-AGENT/badge.svg)](https://evaled.ai/agents/YOUR-AGENT)</code>
+  </div>
+</div>
