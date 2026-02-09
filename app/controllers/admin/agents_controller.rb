@@ -45,7 +45,7 @@ module Admin
     private
 
     def set_agent
-      @agent = Agent.find(params[:id])
+      @agent = Agent.find_by!(slug: params[:id])
     end
 
     def agent_params

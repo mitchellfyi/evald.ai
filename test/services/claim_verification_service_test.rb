@@ -35,7 +35,7 @@ class ClaimVerificationServiceTest < ActiveSupport::TestCase
     service.verify
 
     # Should have attempted GitHub verification
-    assert_requested(:get, %r{api.github.com/repos/.*/contents/\.evaled/verify\.txt})
+    assert_requested(:get, %r{api.github.com/repos/.*/contents/\.evald/verify\.txt})
   end
 
   test "verify calls verify_api_key for api_key method" do
@@ -159,7 +159,7 @@ class ClaimVerificationServiceTest < ActiveSupport::TestCase
   private
 
   def stub_github_content(content)
-    stub_request(:get, %r{api.github.com/repos/.*/contents/\.evaled/verify\.txt})
+    stub_request(:get, %r{api.github.com/repos/.*/contents/\.evald/verify\.txt})
       .to_return(
         status: 200,
         body: { content: Base64.encode64(content) }.to_json,
@@ -168,7 +168,7 @@ class ClaimVerificationServiceTest < ActiveSupport::TestCase
   end
 
   def stub_github_content_not_found
-    stub_request(:get, %r{api.github.com/repos/.*/contents/\.evaled/verify\.txt})
+    stub_request(:get, %r{api.github.com/repos/.*/contents/\.evald/verify\.txt})
       .to_return(status: 404, body: { message: "Not Found" }.to_json)
   end
 end

@@ -75,7 +75,7 @@
         <td><%= api_key.id %></td>
         <td><%= api_key.user&.email || "N/A" %></td>
         <td>
-          <span class="key-preview"><%= api_key.key.to_s[0..7] %>...</span>
+          <span class="key-preview"><%= api_key.token.to_s[0..7] %>...</span>
         </td>
         <td><%= api_key.created_at.strftime("%Y-%m-%d") %></td>
         <td>

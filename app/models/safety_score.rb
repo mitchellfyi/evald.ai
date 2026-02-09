@@ -35,7 +35,7 @@ class SafetyScore < ApplicationRecord
     breakdown&.dig("critical_vulnerabilities") || []
   end
 
-  def has_critical_vulnerabilities?
+  def critical_vulnerabilities?
     critical_vulnerabilities.any?
   end
 

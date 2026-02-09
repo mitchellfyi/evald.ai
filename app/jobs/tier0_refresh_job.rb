@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Scheduled job to refresh Tier 0 scores for all agents
 # Runs once per day, processing agents that haven't been evaluated recently
 class Tier0RefreshJob < ApplicationJob
