@@ -100,6 +100,9 @@ jobs:
       - name: Set up database
         run: bin/rails db:prepare
 
+      - name: Build Tailwind CSS
+        run: bin/rails tailwindcss:build
+
       - name: Run tests
         run: bin/rails test
 
