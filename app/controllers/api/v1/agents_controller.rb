@@ -99,7 +99,7 @@ module Api
 
         {
           recommended: best.slug,
-          reason: "Highest Evaled Score (#{best.decayed_score}) among compared agents"
+          reason: "Highest Evald Score (#{best.decayed_score}) among compared agents"
         }
       end
     end

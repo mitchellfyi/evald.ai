@@ -5,7 +5,7 @@ FactoryBot.define do
     association :agent
     certification_type { "safety" }
     level { "bronze" }
-    issuer { "evaled.ai" }
+    issuer { "evald.ai" }
     issued_at { Time.current }
     expires_at { 1.year.from_now }
 

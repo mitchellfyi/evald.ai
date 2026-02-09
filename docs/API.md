@@ -1,4 +1,4 @@
-# evaled.ai API Documentation
+# evald.ai API Documentation
 
 ## Authentication
 

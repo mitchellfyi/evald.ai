@@ -64,7 +64,7 @@ module Agents
       # Verification methods:
       # 1. Check if user's GitHub account matches the agent's repo owner
       # 2. Verify user has push access to the repo
-      # 3. Check for verification file in repo (.evaled-verify.txt)
+      # 3. Check for verification file in repo (.evald-verify.txt)
 
       return { verified: false, reason: "No GitHub account linked" } unless current_user&.github_username
 

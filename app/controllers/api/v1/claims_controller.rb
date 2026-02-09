@@ -35,9 +35,9 @@ module Api
       def verification_instructions(claim)
         case claim.verification_method
         when "dns_txt"
-          "Add a TXT record: _evaled.yourdomain.com = #{claim.verification_data['token']}"
+          "Add a TXT record: _evald.yourdomain.com = #{claim.verification_data['token']}"
         when "github_file"
-          "Create file .evaled/verify.txt containing: #{claim.verification_data['token']}"
+          "Create file .evald/verify.txt containing: #{claim.verification_data['token']}"
         when "api_key"
           "Call our API with your agent's API key"
         end

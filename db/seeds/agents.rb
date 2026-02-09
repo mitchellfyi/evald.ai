@@ -78,7 +78,7 @@ class GithubAgentSeeder
 
     request = Net::HTTP::Get.new(uri)
     request["Accept"] = "application/vnd.github.v3+json"
-    request["User-Agent"] = "evaled.ai-seeder"
+    request["User-Agent"] = "evald.ai-seeder"
     request["Authorization"] = "Bearer #{@token}" if @token.present?
 
     response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|

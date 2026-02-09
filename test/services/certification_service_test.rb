@@ -117,7 +117,7 @@ class CertificationServiceTest < ActiveSupport::TestCase
     assert_equal @agent.id, cert.agent_id
     assert_equal "safety", cert.certification_type
     assert_equal "bronze", cert.level
-    assert_equal "evaled.ai", cert.issuer
+    assert_equal "evald.ai", cert.issuer
     assert cert.issued_at.present?
     assert cert.expires_at.present?
   end

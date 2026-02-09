@@ -11,7 +11,7 @@ class CreateAgents < ActiveRecord::Migration[8.0]
       t.string :builder_name
       t.string :builder_url
 
-      # Evaled Score (computed)
+      # Evald Score (computed)
       t.decimal :score, precision: 5, scale: 2
       t.decimal :score_at_eval, precision: 5, scale: 2
       t.datetime :last_verified_at
