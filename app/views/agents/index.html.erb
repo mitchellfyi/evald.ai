@@ -26,7 +26,7 @@
 </div>
 
 <!-- Featured Agents (only on first page) -->
-<% if @featured_agents.present? && params[:category].blank? && params[:min_score].blank? && @pagy.page == 1 %>
+<% if @featured_agents.present? && params[:category].blank? && params[:min_score].blank? && @page == 1 %>
 <div class="mb-12">
   <h2 class="text-xl font-bold text-gray-900 mb-4">⭐ Featured Agents</h2>
   <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -41,7 +41,7 @@
 <div>
   <h2 class="text-xl font-bold text-gray-900 mb-4">
     <%= params[:category].present? ? "#{params[:category].capitalize} Agents" : "All Agents" %>
-    <span class="text-gray-400 font-normal">(<%= @pagy.count %>)</span>
+    <span class="text-gray-400 font-normal">(<%= @total_count %>)</span>
   </h2>
   
   <% if @agents.empty? %>
@@ -57,22 +57,22 @@
     </div>
     
     <!-- Pagination -->
-    <% if @pagy.pages > 1 %>
+    <% if @total_pages > 1 %>
       <div class="mt-8 flex justify-center">
         <nav class="flex items-center space-x-1" aria-label="Pagination">
-          <% if @pagy.prev %>
-            <%= link_to agents_path(page: @pagy.prev, category: params[:category], min_score: params[:min_score]), 
+          <% if @page > 1 %>
+            <%= link_to agents_path(page: @page - 1, category: params[:category], min_score: params[:min_score]), 
                 class: "px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" do %>
               ← Previous
             <% end %>
           <% end %>
           
           <span class="px-4 py-2 text-sm text-gray-700">
-            Page <%= @pagy.page %> of <%= @pagy.pages %>
+            Page <%= @page %> of <%= @total_pages %>
           </span>
           
-          <% if @pagy.next %>
-            <%= link_to agents_path(page: @pagy.next, category: params[:category], min_score: params[:min_score]), 
+          <% if @page < @total_pages %>
+            <%= link_to agents_path(page: @page + 1, category: params[:category], min_score: params[:min_score]), 
                 class: "px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" do %>
               Next →
             <% end %>

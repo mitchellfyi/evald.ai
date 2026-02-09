@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 class AgentsController < ApplicationController
+  PER_PAGE = 25
+
   def index
     agents = Agent.published.order(score: :desc)
 
@@ -11,7 +13,12 @@ class AgentsController < ApplicationController
       agents = agents.high_score(params[:min_score].to_i)
     end
 
-    @pagy, @agents = pagy(agents)
+    @total_count = agents.count
+    @page = (params[:page] || 1).to_i
+    @total_pages = (@total_count.to_f / PER_PAGE).ceil
+    @page = [[@page, 1].max, @total_pages].min if @total_pages > 0
+
+    @agents = agents.offset((@page - 1) * PER_PAGE).limit(PER_PAGE)
     @featured_agents = Agent.published.featured.order(score: :desc).limit(6)
     @categories = Agent::CATEGORIES
   end
