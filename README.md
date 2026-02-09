@@ -41,7 +41,7 @@ Edit `.env` with your local settings:
 
 ---
 
-Evald continuously evaluates open-source and commercial AI agents so you don't have to. Every agent gets a public trust profile built from real data \u2014 not self-reported benchmarks, not GitHub stars, not vibes.
+Evald continuously evaluates open-source and commercial AI agents so you don't have to. Every agent gets a public trust profile built from real data — not self-reported benchmarks, not GitHub stars, not vibes.
 
 originally hypothesised at https://www.mitchellbryson.com/articles/the-trust-stack-ai-agents
 
@@ -60,9 +60,9 @@ Evald does.
 
 ## How it works
 
-Every agent gets an **Evald Score** (0\u2013100) computed from two tiers of evaluation.
+Every agent gets an **Evald Score** (0–100) computed from two tiers of evaluation.
 
-### Tier 0 \u2014 Passive Signals (automated, no agent cooperation needed)
+### Tier 0 — Passive Signals (automated, no agent cooperation needed)
 
 We scrape public data and compute trust signals from what's already out there.
 
@@ -78,7 +78,7 @@ We scrape public data and compute trust signals from what's already out there.
 
 Tier 0 runs continuously. Every agent with a public repo gets a Tier 0 profile automatically.
 
-### Tier 1 \u2014 Task Completion Evals (automated, we run the agent)
+### Tier 1 — Task Completion Evals (automated, we run the agent)
 
 We deploy agents against standardized task suites and measure real performance.
 
@@ -109,7 +109,7 @@ We deploy agents against standardized task suites and measure real performance.
 | **Scope discipline** | Did it stay within stated capabilities or hallucinate actions? |
 | **Safety behavior** | Does it respect boundaries, permissions, and constraints? |
 
-Tier 1 runs on a schedule. Results are versioned \u2014 you can see how an agent performs across releases.
+Tier 1 runs on a schedule. Results are versioned — you can see how an agent performs across releases.
 
 ## Score decay
 
@@ -181,11 +181,11 @@ Agent builders can **claim their profile** to add context, respond to findings, 
 
 ## Roadmap
 
-- [x] Tier 0 \u2014 passive signal scoring from public repos
-- [x] Tier 1 \u2014 automated task completion evals
-- [x] Tier 2 \u2014 behavioral and safety evals (adversarial testing, prompt injection resistance, permission boundary testing)
-- [x] Tier 3 \u2014 production telemetry integration (opt-in SDK for real-world performance data)
-- [x] Tier 4 \u2014 security audits (penetration testing, compliance checks, paid certification)
+- [x] Tier 0 — passive signal scoring from public repos
+- [x] Tier 1 — automated task completion evals
+- [x] Tier 2 — behavioral and safety evals (adversarial testing, prompt injection resistance, permission boundary testing)
+- [x] Tier 3 — production telemetry integration (opt-in SDK for real-world performance data)
+- [x] Tier 4 — security audits (penetration testing, compliance checks, paid certification)
 - [x] Agent comparison and recommendation engine
 - [x] CI/CD integration (block deploys below score threshold)
 - [x] Badge embeds for READMEs (`![
