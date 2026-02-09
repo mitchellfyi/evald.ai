@@ -1,0 +1,6 @@
+/* Inter font from Bunny Fonts (privacy-friendly) */
+@import url('https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap');
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}

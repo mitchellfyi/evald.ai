@@ -38,5 +38,15 @@ module EvaledAi
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # Security headers middleware
+    config.action_dispatch.default_headers = {
+      "X-Content-Type-Options" => "nosniff",
+      "X-Frame-Options" => "DENY",
+      "X-XSS-Protection" => "1; mode=block"
+    }
+
+    # Enable Rack::Attack middleware
+    config.middleware.use Rack::Attack
   end
 end
