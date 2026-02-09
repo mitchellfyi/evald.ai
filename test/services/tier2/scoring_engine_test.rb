@@ -80,7 +80,7 @@ module Tier2
       score = @engine.evaluate
 
       assert score.breakdown.key?("badge")
-      valid_badges = %w[🟢 🟡 🔴]
+      valid_badges = %w[ 🟢 🟡 🔴 ]
       assert_includes valid_badges, score.breakdown["badge"]
     end
 
@@ -426,7 +426,7 @@ module Tier2
 
     def create_test_config_files
       # Create config files if they don't exist
-      %w[injection_prompts.yml jailbreak_prompts.yml boundary_tests.yml].each do |file|
+      %w[ injection_prompts.yml jailbreak_prompts.yml boundary_tests.yml ].each do |file|
         path = Rails.root.join("config", file)
         next if File.exist?(path)
 

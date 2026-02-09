@@ -28,6 +28,7 @@ module Tier0
     test "has_lockfile is true when package-lock exists" do
       stub_contents("package-lock.json", content: "{}")
       stub_default_contents
+      stub_dependabot_alerts(count: 0)
 
       result = DependencyRiskAnalyzer.new(@agent).analyze
 
@@ -37,6 +38,7 @@ module Tier0
     test "has_lockfile is true when Gemfile.lock exists" do
       stub_contents("Gemfile.lock", content: "GEM")
       stub_default_contents
+      stub_dependabot_alerts(count: 0)
 
       result = DependencyRiskAnalyzer.new(@agent).analyze
 
@@ -45,6 +47,7 @@ module Tier0
 
     test "has_lockfile is false when no lockfile exists" do
       stub_default_contents
+      stub_dependabot_alerts(count: 0)
 
       result = DependencyRiskAnalyzer.new(@agent).analyze
 
@@ -69,6 +72,7 @@ module Tier0
       gemfile = "source 'https://rubygems.org'\ngem 'rails'\ngem 'puma'\ngem 'pg'"
       stub_contents("Gemfile", content: gemfile)
       stub_default_contents
+      stub_dependabot_alerts(count: 0)
 
       result = DependencyRiskAnalyzer.new(@agent).analyze
 
@@ -79,6 +83,7 @@ module Tier0
       requirements = "django>=4.0\nrequests\n# comment\npytest"
       stub_contents("requirements.txt", content: requirements)
       stub_default_contents
+      stub_dependabot_alerts(count: 0)
 
       result = DependencyRiskAnalyzer.new(@agent).analyze
 
