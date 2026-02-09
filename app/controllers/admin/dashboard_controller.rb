@@ -5,7 +5,8 @@ module Admin
       @stats = {
         users_count: User.count,
         agents_count: Agent.count,
-        api_keys_count: ApiKey.count
+        api_keys_count: ApiKey.count,
+        pending_agents_count: PendingAgent.pending.count
       }
     end
   end

@@ -3,13 +3,19 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
-# Create admin user if not exists
-admin_email = Rails.application.credentials.dig(:admin, :email) || ENV.fetch("ADMIN_EMAIL", "admin@evald.ai")
-admin = User.find_or_create_by!(email: admin_email) do |u|
-  u.password = SecureRandom.hex(16)
+# Create admin user from credentials
+admin_email = Rails.application.credentials.dig(:developer, :email) || ENV.fetch("ADMIN_EMAIL", "admin@evald.ai")
+admin_password = Rails.application.credentials.dig(:developer, :password)
+
+if admin_password.present?
+  admin = User.find_or_initialize_by(email: admin_email)
+  admin.password = admin_password
+  admin.save!
+  admin.add_role(:admin) unless admin.has_role?(:admin)
+  puts "Admin user created/updated: #{admin.email}"
+else
+  puts "Warning: No developer password in credentials, skipping admin user creation"
 end
-admin.add_role(:admin) unless admin.has_role?(:admin)
-puts "Admin user: #{admin.email}"
 
 # Load all seed files from db/seeds/
 Dir[Rails.root.join("db/seeds/*.rb")].sort.each do |seed_file|

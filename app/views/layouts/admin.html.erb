@@ -122,6 +122,7 @@
         <%= link_to "📊 Dashboard", admin_root_path, class: request.path == admin_root_path ? 'active' : '' %>
         <%= link_to "👥 Users", admin_users_path, class: request.path.start_with?('/admin/users') ? 'active' : '' %>
         <%= link_to "🤖 Agents", admin_agents_path, class: request.path.start_with?('/admin/agents') ? 'active' : '' %>
+        <%= link_to "🔍 Pending Agents", admin_pending_agents_path, class: request.path.start_with?('/admin/pending_agents') ? 'active' : '' %>
         <%= link_to "🔑 API Keys", admin_api_keys_path, class: request.path.start_with?('/admin/api_keys') ? 'active' : '' %>
       </nav>
       <div class="sidebar-footer">

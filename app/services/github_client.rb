@@ -61,6 +61,10 @@ class GithubClient
     end
   end
 
+  def search_repositories(query, sort: "stars", per_page: 30)
+    get("/search/repositories", q: query, sort: sort, order: "desc", per_page: per_page)
+  end
+
   class RateLimitError < StandardError; end
   class RepoNotFoundError < StandardError; end
 

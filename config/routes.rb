@@ -81,6 +81,13 @@ Rails.application.routes.draw do
     end
     resources :api_keys, only: [:index, :destroy]
 
+    resources :pending_agents, only: [:index, :show] do
+      member do
+        post :approve
+        post :reject
+      end
+    end
+
     # Evaluation observability
     resources :evaluations, only: [:index, :show] do
       collection do

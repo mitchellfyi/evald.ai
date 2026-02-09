@@ -54,8 +54,7 @@ module Admin
       patch admin_agent_path(@agent), params: {
         agent: {
           name: "Updated Agent",
-          description: "New description",
-          category: "coding"
+          description: "New description"
         }
       }
 
@@ -81,12 +80,12 @@ module Admin
           name: "New Name",
           slug: "new-slug",
           description: "New description",
-          repo_url: "https://github.com/example/repo",
-          category: "coding"
+          repo_url: "https://github.com/example/repo"
         }
       }
 
-      assert_redirected_to admin_agent_path(id: "new-slug")
+      # After slug changes, redirect goes to new slug
+      assert_redirected_to admin_agent_path("new-slug")
       @agent.reload
       assert_equal "New Name", @agent.name
       assert_equal "new-slug", @agent.slug
