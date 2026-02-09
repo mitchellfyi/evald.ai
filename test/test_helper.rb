@@ -19,6 +19,10 @@ module ActiveSupport
 
     # Add FactoryBot methods
     include FactoryBot::Syntax::Methods
+
+    # Add Shoulda::Matchers DSL
+    extend Shoulda::Matchers::ActiveRecord
+    extend Shoulda::Matchers::ActiveModel
   end
 end
 
