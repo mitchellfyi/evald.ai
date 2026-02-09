@@ -107,4 +107,114 @@ class PendingAgentTest < ActiveSupport::TestCase
     assert build(:pending_agent, status: "pending").pending?
     refute build(:pending_agent, status: "approved").pending?
   end
+
+  # AI review tests
+  test "ai_classification must be valid if present" do
+    pending_agent = build(:pending_agent, ai_classification: "invalid")
+    refute pending_agent.valid?
+    assert_includes pending_agent.errors[:ai_classification], "is not included in the list"
+  end
+
+  test "ai_classification can be nil" do
+    pending_agent = build(:pending_agent, ai_classification: nil)
+    assert pending_agent.valid?
+  end
+
+  test "ai_confidence must be between 0 and 1" do
+    over = build(:pending_agent, ai_confidence: 1.5)
+    under = build(:pending_agent, ai_confidence: -0.1)
+    refute over.valid?
+    refute under.valid?
+  end
+
+  test "ai_confidence can be nil" do
+    pending_agent = build(:pending_agent, ai_confidence: nil)
+    assert pending_agent.valid?
+  end
+
+  test "ai_reviewed? returns true when ai_reviewed_at is set" do
+    pending_agent = build(:pending_agent, ai_reviewed_at: Time.current)
+    assert pending_agent.ai_reviewed?
+  end
+
+  test "ai_reviewed? returns false when ai_reviewed_at is nil" do
+    pending_agent = build(:pending_agent, ai_reviewed_at: nil)
+    refute pending_agent.ai_reviewed?
+  end
+
+  test "needs_ai_review? is inverse of ai_reviewed?" do
+    reviewed = build(:pending_agent, ai_reviewed_at: Time.current)
+    not_reviewed = build(:pending_agent, ai_reviewed_at: nil)
+
+    refute reviewed.needs_ai_review?
+    assert not_reviewed.needs_ai_review?
+  end
+
+  test "auto_approvable? returns true for high confidence agents" do
+    pending_agent = build(:pending_agent, is_agent: true, ai_confidence: 0.85)
+    assert pending_agent.auto_approvable?
+  end
+
+  test "auto_approvable? returns false for low confidence agents" do
+    pending_agent = build(:pending_agent, is_agent: true, ai_confidence: 0.6)
+    refute pending_agent.auto_approvable?
+  end
+
+  test "auto_approvable? returns false for non-agents" do
+    pending_agent = build(:pending_agent, is_agent: false, ai_confidence: 0.9)
+    refute pending_agent.auto_approvable?
+  end
+
+  test "auto_rejectable? returns true for high confidence non-agents" do
+    pending_agent = build(:pending_agent, is_agent: false, ai_confidence: 0.85)
+    assert pending_agent.auto_rejectable?
+  end
+
+  test "auto_rejectable? returns false for low confidence" do
+    pending_agent = build(:pending_agent, is_agent: false, ai_confidence: 0.6)
+    refute pending_agent.auto_rejectable?
+  end
+
+  test "ai_reviewed scope returns agents with ai_reviewed_at set" do
+    reviewed = create(:pending_agent, ai_reviewed_at: Time.current)
+    not_reviewed = create(:pending_agent, ai_reviewed_at: nil)
+
+    result = PendingAgent.ai_reviewed
+    assert_includes result, reviewed
+    refute_includes result, not_reviewed
+  end
+
+  test "ai_pending_review scope returns agents without ai_reviewed_at" do
+    reviewed = create(:pending_agent, ai_reviewed_at: Time.current)
+    not_reviewed = create(:pending_agent, ai_reviewed_at: nil)
+
+    result = PendingAgent.ai_pending_review
+    assert_includes result, not_reviewed
+    refute_includes result, reviewed
+  end
+
+  test "classified_as_agent scope returns agents where is_agent is true" do
+    agent = create(:pending_agent, is_agent: true)
+    non_agent = create(:pending_agent, is_agent: false)
+
+    result = PendingAgent.classified_as_agent
+    assert_includes result, agent
+    refute_includes result, non_agent
+  end
+
+  test "queue_ai_review! enqueues job if not reviewed" do
+    pending_agent = create(:pending_agent, ai_reviewed_at: nil)
+
+    assert_enqueued_with(job: AiAgentReviewJob, args: [pending_agent.id]) do
+      pending_agent.queue_ai_review!
+    end
+  end
+
+  test "queue_ai_review! does not enqueue job if already reviewed" do
+    pending_agent = create(:pending_agent, ai_reviewed_at: Time.current)
+
+    assert_no_enqueued_jobs(only: AiAgentReviewJob) do
+      pending_agent.queue_ai_review!
+    end
+  end
 end

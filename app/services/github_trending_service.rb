@@ -135,7 +135,7 @@ class GithubTrendingService
   end
 
   def create_pending_agent(repo, score)
-    PendingAgent.create!(
+    pending = PendingAgent.create!(
       name: repo["name"],
       github_url: repo["html_url"],
       description: repo["description"]&.truncate(500),
@@ -147,6 +147,10 @@ class GithubTrendingService
       confidence_score: score,
       discovered_at: Time.current
     )
+
+    # Queue AI review for classification
+    pending.queue_ai_review!
+    pending
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.warn("Failed to create pending agent #{repo['name']}: #{e.message}")
     nil

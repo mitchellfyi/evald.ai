@@ -65,6 +65,9 @@ gem "secure_headers", "~> 7.1"
 # HTTP client for GitHub API
 gem "faraday", "~> 2.9"
 
+# OpenAI API client for AI-powered agent classification
+gem "ruby-openai", "~> 8.0"
+
 # Pagination
 gem "pagy", "~> 43.2"
 

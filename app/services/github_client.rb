@@ -38,6 +38,34 @@ class GithubClient
     nil
   end
 
+  # Fetch repository information
+  def fetch_repository(owner, name)
+    repo(owner, name)
+  rescue StandardError
+    nil
+  end
+
+  # Fetch and decode README content
+  def fetch_readme(owner, name)
+    response = get_with_status("/repos/#{owner}/#{name}/readme")
+    return nil unless response[:status] == 200
+
+    content = response[:body]["content"]
+    encoding = response[:body]["encoding"]
+
+    return nil unless content.present?
+
+    case encoding
+    when "base64"
+      Base64.decode64(content)
+    else
+      content
+    end
+  rescue StandardError => e
+    Rails.logger.warn("Failed to fetch README for #{owner}/#{name}: #{e.message}")
+    nil
+  end
+
   # Check user's permission level on a repository
   # Returns: { permission: "admin"|"maintain"|"write"|"triage"|"read", ... }
   # or nil if the user is not a collaborator
