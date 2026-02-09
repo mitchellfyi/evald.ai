@@ -84,3 +84,9 @@ group :development do
   # N+1 query detection
   gem "bullet"
 end
+
+group :test do
+  gem "factory_bot_rails"
+  gem "shoulda-matchers"
+  gem "simplecov", require: false
+end
