@@ -20,15 +20,5 @@ module ActiveSupport
     # Add FactoryBot methods
     include FactoryBot::Syntax::Methods
 
-    # Add Shoulda::Matchers DSL
-    extend Shoulda::Matchers::ActiveRecord
-    extend Shoulda::Matchers::ActiveModel
-  end
-end
-
-Shoulda::Matchers.configure do |config|
-  config.integrate do |with|
-    with.test_framework :minitest
-    with.library :rails
   end
 end

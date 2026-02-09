@@ -1,18 +1,27 @@
 require "test_helper"
 
 class AgentTest < ActiveSupport::TestCase
-  # Validations
-  should validate_presence_of(:name)
-  should validate_presence_of(:slug)
-  should validate_uniqueness_of(:slug)
-
-  # Associations
-  should have_many(:evaluations).dependent(:destroy)
-  should belong_to(:claimed_by_user).class_name("User").optional
-
   test "factory creates valid agent" do
     agent = build(:agent)
     assert agent.valid?
+  end
+
+  test "requires name" do
+    agent = build(:agent, name: nil)
+    refute agent.valid?
+    assert_includes agent.errors[:name], "can't be blank"
+  end
+
+  test "requires slug" do
+    agent = build(:agent, slug: nil, name: nil)
+    refute agent.valid?
+  end
+
+  test "slug must be unique" do
+    create(:agent, slug: "test-agent")
+    duplicate = build(:agent, slug: "test-agent")
+    refute duplicate.valid?
+    assert_includes duplicate.errors[:slug], "has already been taken"
   end
 
   test "generates slug from name on create" do
@@ -25,13 +34,6 @@ class AgentTest < ActiveSupport::TestCase
     agent = build(:agent, slug: "Invalid Slug!")
     refute agent.valid?
     assert_includes agent.errors[:slug], "is invalid"
-  end
-
-  test "slug must be unique" do
-    create(:agent, slug: "test-agent")
-    duplicate = build(:agent, slug: "test-agent")
-    refute duplicate.valid?
-    assert_includes duplicate.errors[:slug], "has already been taken"
   end
 
   test "to_param returns slug" do

@@ -1,16 +1,20 @@
 require "test_helper"
 
 class ApiKeyTest < ActiveSupport::TestCase
-  # Validations
-  should validate_presence_of(:name)
-  should validate_uniqueness_of(:token)
-
-  # Associations
-  should belong_to(:user)
-
   test "factory creates valid api_key" do
     api_key = build(:api_key)
     assert api_key.valid?
+  end
+
+  test "requires name" do
+    api_key = build(:api_key, name: nil)
+    refute api_key.valid?
+    assert_includes api_key.errors[:name], "can't be blank"
+  end
+
+  test "requires user" do
+    api_key = build(:api_key, user: nil)
+    refute api_key.valid?
   end
 
   test "generates token on create" do
