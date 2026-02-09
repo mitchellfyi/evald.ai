@@ -163,14 +163,17 @@ CURATED_AGENTS = [
 
 CURATED_AGENTS.each do |agent_data|
   begin
-    Agent.find_or_create_by!(repo_url: agent_data[:github_url]) do |agent|
-      agent.name = agent_data[:name]
-      agent.description = agent_data[:description]
-      
-      # Extract owner from github_url
-      owner_match = agent_data[:github_url].match(%r{github\.com/([^/]+)/})
-      agent.owner = owner_match[1] if owner_match
-      
+    agent = Agent.find_by(repo_url: agent_data[:github_url])
+    
+    if agent
+      puts "  ℹ #{agent_data[:name]} already exists"
+    else
+      agent = Agent.create!(
+        name: agent_data[:name],
+        description: agent_data[:description],
+        repo_url: agent_data[:github_url],
+        owner: agent_data[:github_url].match(%r{github\.com/([^/]+)/[^/]+(?:/|$)})[1]
+      )
       puts "  ✓ Added #{agent_data[:name]}"
     end
   rescue ActiveRecord::RecordInvalid => e
