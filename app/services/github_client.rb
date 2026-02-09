@@ -101,6 +101,8 @@ class GithubClient
       { per_page: per_page, page: page },
       "application/vnd.github.v3.star+json"
     )
+  rescue RateLimitError
+    raise # Re-raise rate limit errors for proper handling upstream
   rescue StandardError => e
     Rails.logger.warn("Failed to fetch stargazers for #{owner}/#{name}: #{e.message}")
     []
