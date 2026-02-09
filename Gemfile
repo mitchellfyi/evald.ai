@@ -55,6 +55,7 @@ gem "pundit", "~> 2.4"
 # Security
 gem "rack-attack", "~> 6.7"
 gem "rack-timeout", "~> 0.7"
+gem "secure_headers", "~> 6.5"
 
 # HTTP client for GitHub API
 gem "faraday", "~> 2.9"

@@ -321,6 +321,7 @@ GEM
     ruby-vips (2.3.0)
       ffi (~> 1.12)
       logger
+    secure_headers (6.7.0)
     securerandom (0.4.1)
     solid_cable (3.0.12)
       actioncable (>= 7.2)
@@ -416,6 +417,7 @@ DEPENDENCIES
   redis (~> 5.0)
   rolify (~> 6.0)
   rubocop-rails-omakase
+  secure_headers (~> 6.5)
   solid_cable
   solid_cache
   solid_queue
