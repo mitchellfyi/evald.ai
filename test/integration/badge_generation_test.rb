@@ -66,13 +66,13 @@ class BadgeGenerationTest < ActionDispatch::IntegrationTest
   test "should generate score badge by default" do
     get agent_badge_path(agent_name: @agent.name)
     assert_response :success
-    assert_includes response.body, "evaled"
+    assert_includes response.body, "evald"
   end
 
   test "should generate tier badge" do
     get agent_badge_path(agent_name: @agent.name), params: { type: "tier" }
     assert_response :success
-    assert_includes response.body, "evaled tier"
+    assert_includes response.body, "evald tier"
   end
 
   test "should generate safety badge" do
@@ -84,13 +84,13 @@ class BadgeGenerationTest < ActionDispatch::IntegrationTest
   test "should generate certification badge" do
     get agent_badge_path(agent_name: @agent.name), params: { type: "certification" }
     assert_response :success
-    assert_includes response.body, "evaled"
+    assert_includes response.body, "evald"
   end
 
   test "should default to score type for invalid type param" do
     get agent_badge_path(agent_name: @agent.name), params: { type: "invalid" }
     assert_response :success
-    assert_includes response.body, "evaled"
+    assert_includes response.body, "evald"
   end
 
   # === Cache Headers Tests ===

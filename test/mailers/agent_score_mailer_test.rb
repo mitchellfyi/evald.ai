@@ -19,7 +19,7 @@ class AgentScoreMailerTest < ActionMailer::TestCase
     end
 
     assert_equal ["owner@example.com"], email.to
-    assert_equal ["notifications@evaled.ai"], email.from
+    assert_equal ["notifications@evald.ai"], email.from
   end
 
   test "decay_warning includes agent name in subject" do

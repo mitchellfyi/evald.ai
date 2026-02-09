@@ -1,4 +1,4 @@
-# evaled.ai
+# evald.ai
 
 **The trust score for AI agents.**
 
@@ -13,8 +13,8 @@
 
 ```bash
 # Clone the repo
-git clone https://github.com/mitchellfyi/evaled.ai.git
-cd evaled.ai
+git clone https://github.com/mitchellfyi/evald.ai.git
+cd evald.ai
 
 # Copy environment variables
 cp .env.example .env
@@ -41,7 +41,7 @@ Edit `.env` with your local settings:
 
 ---
 
-Evaled continuously evaluates open-source and commercial AI agents so you don't have to. Every agent gets a public trust profile built from real data \u2014 not self-reported benchmarks, not GitHub stars, not vibes.
+Evald continuously evaluates open-source and commercial AI agents so you don't have to. Every agent gets a public trust profile built from real data \u2014 not self-reported benchmarks, not GitHub stars, not vibes.
 
 originally hypothesised at https://www.mitchellbryson.com/articles/the-trust-stack-ai-agents
 
@@ -56,11 +56,11 @@ You're evaluating an AI agent for your codebase, your customer data, or your pro
 
 MCP tells you **how** agents connect. A2A tells you **how** agents talk to each other. Nothing tells you **whether you should trust them**.
 
-Evaled does.
+Evald does.
 
 ## How it works
 
-Every agent in the registry gets an **Evaled Score** (0\u2013100) computed from two tiers of evaluation.
+Every agent in the registry gets an **Evald Score** (0\u2013100) computed from two tiers of evaluation.
 
 ### Tier 0 \u2014 Passive Signals (automated, no agent cooperation needed)
 
@@ -113,7 +113,7 @@ Tier 1 runs on a schedule. Results are versioned \u2014 you can see how an agent
 
 ## Score decay
 
-Evaled Scores decay over time. An agent that scored 92 six months ago but hasn't been re-evaluated shows a decayed score with a `last_verified` timestamp. Trust isn't permanent.
+Evald Scores decay over time. An agent that scored 92 six months ago but hasn't been re-evaluated shows a decayed score with a `last_verified` timestamp. Trust isn't permanent.
 
 ```
 {
@@ -132,7 +132,7 @@ Evaled Scores decay over time. An agent that scored 92 six months ago but hasn't
 # Get an agent's trust profile
 GET /v1/agents/{agent_id}
 
-# Get the Evaled Score
+# Get the Evald Score
 GET /v1/agents/{agent_id}/score
 
 # Compare agents for a use case
@@ -143,7 +143,7 @@ GET /v1/search?capability=coding&min_score=80
 ```
 
 ```bash
-curl https://api.evaled.ai/v1/agents/devin/score
+curl https://api.evald.ai/v1/agents/devin/score
 
 {
   "agent": "devin",
@@ -167,10 +167,10 @@ curl https://api.evaled.ai/v1/agents/devin/score
 
 ## Agent profiles
 
-Every agent gets a public profile page at `evaled.ai/agents/{name}`.
+Every agent gets a public profile page at `evald.ai/agents/{name}`.
 
 Profiles include:
-- Evaled Score with full breakdown
+- Evald Score with full breakdown
 - Builder / org with link to source
 - Version history with score trends over time
 - Tier 0 and Tier 1 details

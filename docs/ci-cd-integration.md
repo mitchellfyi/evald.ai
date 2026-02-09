@@ -1,6 +1,6 @@
 # CI/CD Integration
 
-Evaled.ai provides a deploy gate API that enables score-based deployment checks in your CI/CD pipelines.
+Evald.ai provides a deploy gate API that enables score-based deployment checks in your CI/CD pipelines.
 
 ## API Endpoint
 
@@ -62,7 +62,7 @@ See [github-action.yml](./github-action.yml) for a ready-to-use workflow templat
 1. Copy `docs/github-action.yml` to `.github/workflows/evaled-deploy-gate.yml`
 2. Update the `AGENTS` array with your agent slugs
 3. Set `MIN_SCORE` to your desired threshold
-4. (Optional) Add `EVALED_API_KEY` to your repository secrets
+4. (Optional) Add `EVALD_API_KEY` to your repository secrets
 
 ### Example Usage
 
@@ -72,7 +72,7 @@ See [github-action.yml](./github-action.yml) for a ready-to-use workflow templat
     curl -X POST \
       -H "Content-Type: application/json" \
       -d '{"agents": ["my-agent"], "min_score": 80}' \
-      https://evaled.ai/api/v1/deploy_gates/check
+      https://evald.ai/api/v1/deploy_gates/check
 ```
 
 ## Environment-Specific Thresholds

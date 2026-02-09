@@ -4,7 +4,7 @@
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
 # Create admin user if not exists
-admin_email = Rails.application.credentials.dig(:admin, :email) || ENV.fetch("ADMIN_EMAIL", "admin@evaled.ai")
+admin_email = Rails.application.credentials.dig(:admin, :email) || ENV.fetch("ADMIN_EMAIL", "admin@evald.ai")
 admin = User.find_or_create_by!(email: admin_email) do |u|
   u.password = SecureRandom.hex(16)
 end

@@ -1,4 +1,4 @@
-# Contributing to evaled.ai
+# Contributing to evald.ai
 
 ## Code Style
 - Follow Rails conventions
