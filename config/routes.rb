@@ -33,6 +33,10 @@ Rails.application.routes.draw do
       end
       resources :telemetry, only: [ :create ]
       resources :certifications, only: [ :show, :create ]
+
+      # Standalone comparison and search endpoints
+      resources :compare, only: [ :index ]
+      resources :search, only: [ :index ]
     end
   end
 
