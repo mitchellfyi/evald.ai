@@ -2,6 +2,10 @@
 
 **The trust score for AI agents.**
 
+> *Protocols tell you how agents connect. Evald tells you whether you should.*
+
+Evald is an **independent evaluation authority** for AI agents — like Moody's for credit ratings or UL for product safety. We continuously evaluate open-source and commercial AI agents so you don't have to. Scores are based on real evaluations, not self-reported benchmarks.
+
 ## Local Development
 
 ### Prerequisites
@@ -286,3 +290,22 @@ The Evald MCP server is compatible with MCP-I identity headers when present, but
 - [x] Agent comparison and recommendation engine
 - [x] CI/CD integration (block deploys below score threshold)
 - [x] Badge embeds for READMEs (`![
+
+## How Evald Is Different
+
+| Compared To | They Answer | Evald Answers |
+|---|---|---|
+| **Identity (KnowThat.ai, Vouch)** | "Is this agent who it claims to be?" | "Is this agent trustworthy?" |
+| **Observability (AgentOps, LangSmith)** | "How is MY agent doing?" | "Should I trust THIS agent?" |
+| **Benchmarks (SWE-bench)** | "Can this agent solve this task?" | Composite trust score across multiple dimensions |
+
+### Analogies
+
+- **For investors:** Moody's for AI agents
+- **For developers:** npm + Snyk
+- **For enterprises:** UL certification for agents
+- **For general audience:** Carfax for AI agents
+
+## License
+
+MIT
