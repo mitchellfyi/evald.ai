@@ -4,6 +4,7 @@ class Agent < ApplicationRecord
   has_many :agent_telemetry_stats, dependent: :destroy
   has_many :certifications, dependent: :destroy
   has_many :security_scans, dependent: :destroy
+  has_many :safety_scores, dependent: :destroy
   belongs_to :claimed_by_user, class_name: "User", optional: true
 
   validates :name, presence: true
@@ -141,6 +142,10 @@ class Agent < ApplicationRecord
 
   def current_tier0_score
     agent_scores.tier0.current.latest.first
+  end
+
+  def current_safety_score
+    safety_scores.latest.first
   end
 
   private
