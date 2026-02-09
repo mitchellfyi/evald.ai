@@ -19,6 +19,5 @@ module ActiveSupport
 
     # Add FactoryBot methods
     include FactoryBot::Syntax::Methods
-
   end
 end
