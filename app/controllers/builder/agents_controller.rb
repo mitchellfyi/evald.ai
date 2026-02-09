@@ -31,8 +31,8 @@ module Builder
 
     # Only allow builder-editable fields
     def builder_agent_params
-      params.expect(agent: [ :description, :tagline, :use_case,
-        :documentation_url, :changelog_url, :demo_url ])
+      params.expect(agent: [:description, :tagline, :use_case,
+        :documentation_url, :changelog_url, :demo_url])
     end
   end
 end

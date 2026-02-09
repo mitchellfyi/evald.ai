@@ -32,8 +32,8 @@ module Builder
     end
 
     def notification_params
-      params.expect(notification_preference: [ :score_changes, :new_eval_results,
-        :comparison_mentions, :email_enabled ])
+      params.expect(notification_preference: [:score_changes, :new_eval_results,
+        :comparison_mentions, :email_enabled])
     end
   end
 end
