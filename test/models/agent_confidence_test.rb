@@ -75,7 +75,6 @@ class AgentConfidenceTest < ActiveSupport::TestCase
     assert factors.key?(:has_tier1)
     assert factors.key?(:tier1_run_count)
     assert factors.key?(:recent_eval)
-    assert factors.key?(:eval_breadth)
     assert factors.key?(:low_variance)
   end
 
@@ -109,5 +108,27 @@ class AgentConfidenceTest < ActiveSupport::TestCase
     factors = agent.confidence_factors
 
     refute factors[:low_variance], "Scores 50 and 95 should have high variance"
+  end
+
+  test "high variance prevents high confidence even with complete data" do
+    agent = create(:agent,
+      tier0_repo_health: 80.0,
+      tier0_documentation: 70.0,
+      tier0_bus_factor: 60.0,
+      tier0_dependency_risk: 75.0,
+      tier0_community: 65.0,
+      tier0_license: 90.0,
+      tier0_maintenance: 70.0,
+      tier1_accuracy: 0.85,
+      tier1_completion_rate: 0.90,
+      tier1_cost_efficiency: 0.80,
+      tier1_scope_discipline: 0.75,
+      tier1_safety: 0.88,
+      last_verified_at: 5.days.ago)
+    create(:evaluation, :completed, agent: agent, tier: "tier1", score: 50.0)
+    create(:evaluation, :completed, agent: agent, tier: "tier1", score: 95.0)
+
+    assert_equal "medium", agent.confidence_level,
+      "High variance should prevent high confidence, falling back to medium"
   end
 end

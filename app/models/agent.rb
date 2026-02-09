@@ -230,13 +230,6 @@ class Agent < ApplicationRecord
     recent_cutoff = 30.days.ago
     recent_eval = last_verified_at.present? && last_verified_at > recent_cutoff
 
-    eval_task_categories = eval_runs.completed
-      .joins(:eval_task)
-      .distinct
-      .pluck("eval_tasks.category")
-      .compact
-    breadth = eval_task_categories.size
-
     tier1_scores = tier1_evals.where.not(score: nil).pluck(:score).map(&:to_f)
     low_variance = if tier1_scores.size >= 2
       mean = tier1_scores.sum / tier1_scores.size
@@ -246,7 +239,8 @@ class Agent < ApplicationRecord
       false
     end
 
-    level = if has_tier0 && tier1_complete && tier1_run_count >= 2 && recent_eval
+    # High requires: complete tiers, multiple runs, recent data, and consistent scores
+    level = if has_tier0 && tier1_complete && tier1_run_count >= 2 && recent_eval && low_variance
               "high"
             elsif has_tier0 && (has_tier1 || tier0_evals.where("created_at > ?", 60.days.ago).any?)
               "medium"
@@ -262,7 +256,6 @@ class Agent < ApplicationRecord
       has_tier1: has_tier1,
       tier1_run_count: tier1_run_count,
       recent_eval: recent_eval,
-      eval_breadth: breadth,
       low_variance: low_variance
     }
   end
