@@ -1,0 +1,232 @@
+name: Self-Healing CI
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  issues: write
+  actions: read
+  checks: read
+
+jobs:
+  create-fix-issue:
+    # Only run on failures on the main branch; skip cancelled runs
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Collect failure logs
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        id: logs
+        with:
+          script: |
+            const runId = context.payload.workflow_run.id;
+
+            // List jobs for the failed workflow run
+            const { data: jobsData } = await github.rest.actions.listJobsForWorkflowRun({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: runId,
+              filter: 'latest',
+            });
+
+            const failedJobs = jobsData.jobs.filter(j => j.conclusion === 'failure');
+            if (failedJobs.length === 0) {
+              core.exportVariable('FAILURE_LOGS', '_No failed jobs found in the workflow run._');
+              return;
+            }
+
+            const MAX_LINES_PER_JOB = 200;
+            let allLogs = '';
+
+            for (const job of failedJobs) {
+              try {
+                const logResponse = await github.rest.actions.downloadJobLogsForWorkflowRun({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  job_id: job.id,
+                });
+                const logText = typeof logResponse.data === 'string'
+                  ? logResponse.data
+                  : Buffer.from(logResponse.data).toString('utf-8');
+                const lines = logText.split('\n');
+                const truncated = lines.slice(-MAX_LINES_PER_JOB).join('\n');
+                allLogs += `### Job: ${job.name}\n\n\`\`\`\n${truncated}\n\`\`\`\n\n`;
+              } catch (e) {
+                allLogs += `### Job: ${job.name}\n\n_Could not retrieve logs: ${e.message}_\n\n`;
+              }
+            }
+
+            // Export as env var so downstream steps can safely access via process.env
+            // (avoids ${{ }} interpolation issues with backticks and special chars in logs)
+            core.exportVariable('FAILURE_LOGS', allLogs);
+
+      - name: Check for existing open issue
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        id: existing
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'ci-fix,automated',
+              per_page: 1,
+            });
+            if (issues.length > 0) {
+              core.setOutput('issue_number', issues[0].number.toString());
+              core.setOutput('found', 'true');
+            } else {
+              core.setOutput('issue_number', '');
+              core.setOutput('found', 'false');
+            }
+
+      - name: Count workflow comments on existing issue
+        if: steps.existing.outputs.found == 'true'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        id: comment_count
+        with:
+          script: |
+            const issueNumber = parseInt('${{ steps.existing.outputs.issue_number }}', 10);
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              per_page: 100,
+            });
+            // Count comments left by this workflow (identified by marker)
+            const marker = '<!-- self-healing-ci -->';
+            const workflowComments = comments.filter(c => c.body && c.body.includes(marker));
+            core.setOutput('count', workflowComments.length.toString());
+
+      - name: Escalate to human if too many retries
+        if: >
+          steps.existing.outputs.found == 'true' &&
+          fromJSON(steps.comment_count.outputs.count) >= 3
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const issueNumber = parseInt('${{ steps.existing.outputs.issue_number }}', 10);
+            // Add needs-human label
+            try {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                labels: ['needs-human'],
+              });
+            } catch (e) {
+              core.warning(`Could not add needs-human label: ${e.message}`);
+            }
+            core.info('Reached maximum retry limit (3). Added needs-human label. Stopping.');
+
+      - name: Add comment to existing issue with new failure
+        if: >
+          steps.existing.outputs.found == 'true' &&
+          fromJSON(steps.comment_count.outputs.count) < 3
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const issueNumber = parseInt('${{ steps.existing.outputs.issue_number }}', 10);
+            const sha = context.payload.workflow_run.head_sha;
+            const runUrl = context.payload.workflow_run.html_url;
+            const logs = process.env.FAILURE_LOGS || '';
+
+            const body = [
+              '<!-- self-healing-ci -->',
+              '## CI Still Failing',
+              '',
+              `CI failed again on \`main\` at commit \`${sha}\`.`,
+              '',
+              `**Failed run:** ${runUrl}`,
+              '',
+              '**Please analyze the updated failure logs below and fix the code.**',
+              '',
+              '## Updated Failure Logs',
+              '',
+              logs,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: body,
+            });
+
+      - name: Ensure labels exist
+        if: steps.existing.outputs.found == 'false'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const labels = [
+              { name: 'ci-fix', color: 'd73a4a', description: 'Automated CI failure fix request' },
+              { name: 'automated', color: '0e8a16', description: 'Created by automation' },
+            ];
+            for (const label of labels) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: label.name,
+                });
+              } catch (e) {
+                if (e.status === 404) {
+                  await github.rest.issues.createLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label.name,
+                    color: label.color,
+                    description: label.description,
+                  });
+                }
+              }
+            }
+
+      - name: Create new issue for Copilot
+        if: steps.existing.outputs.found == 'false'
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        with:
+          script: |
+            const sha = context.payload.workflow_run.head_sha;
+            const shortSha = sha.substring(0, 7);
+            const runUrl = context.payload.workflow_run.html_url;
+            const branch = context.payload.workflow_run.head_branch;
+            const logs = process.env.FAILURE_LOGS || '';
+
+            const title = `[CI Fix] Build failure on \`main\` (${shortSha})`;
+            const body = [
+              '## CI Failure — Auto-generated',
+              '',
+              `The CI workflow failed on branch \`${branch}\` at commit \`${sha}\`.`,
+              '',
+              `**Failed run:** ${runUrl}`,
+              '',
+              '## Task',
+              '',
+              'Analyze the failure logs below and fix the code that is causing CI to fail.',
+              '',
+              '**Rules:**',
+              '- Fix the root cause in the source code, tests, or configuration',
+              '- Do NOT skip, disable, or mark any tests as expected failures',
+              '- Do NOT add `continue-on-error` or any other workaround that masks the failure',
+              '- Run the full test suite locally before submitting your PR',
+              '- Keep your changes minimal and focused on the fix',
+              '',
+              '## Failure Logs',
+              '',
+              logs,
+            ].join('\n');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['ci-fix', 'automated'],
+              assignees: ['copilot'],
+            });
