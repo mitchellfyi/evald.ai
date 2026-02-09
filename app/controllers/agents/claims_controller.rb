@@ -32,8 +32,10 @@ module Agents
         @claim_request.verify!(verification_result)
         @agent.update!(
           claimed_by_user: current_user,
-          claim_status: "verified"
+          claim_status: "claimed",
+          claimed_at: Time.current
         )
+        NotificationPreference.find_or_create_by!(user: current_user, agent: @agent)
         redirect_to agent_profile_path(@agent),
                     notice: "Ownership verified! You now manage this agent."
       else
@@ -97,9 +99,9 @@ module Agents
 
       return false unless permission_data
 
-      # Require admin or maintain permission for verification
+      # Require write, admin, or maintain permission for verification
       permission = permission_data["permission"]
-      %w[ admin maintain ].include?(permission)
+      %w[ admin maintain write ].include?(permission)
     rescue GithubClient::RateLimitError
       Rails.logger.warn("GitHub API rate limit hit during claim verification for #{repo}")
       false

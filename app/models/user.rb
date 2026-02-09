@@ -1,19 +1,35 @@
 # frozen_string_literal: true
 class User < ApplicationRecord
   # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+  # :confirmable, :timeoutable, :trackable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable, :lockable,
+         :omniauthable,
          lock_strategy: :failed_attempts, unlock_strategy: :time,
-         maximum_attempts: 5, unlock_in: 1.hour
+         maximum_attempts: 5, unlock_in: 1.hour,
+         omniauth_providers: [:github]
 
   rolify
   has_many :claimed_agents, class_name: "Agent", foreign_key: :claimed_by_user_id
   has_many :api_keys, dependent: :destroy
+  has_many :claim_requests, dependent: :destroy
+  has_many :notification_preferences, dependent: :destroy
 
   validates :email, presence: true, uniqueness: true
 
   def admin?
     admin == true
+  end
+
+  def self.from_omniauth(auth)
+    where(github_uid: auth.uid.to_s).first_or_initialize.tap do |user|
+      user.github_uid = auth.uid.to_s
+      user.github_username = auth.info.nickname
+      user.email = auth.info.email || "#{auth.info.nickname}@github.example.com"
+      user.name = auth.info.name
+      user.avatar_url = auth.info.image
+      user.password = Devise.friendly_token[0, 20] if user.new_record?
+      user.save!
+    end
   end
 end
