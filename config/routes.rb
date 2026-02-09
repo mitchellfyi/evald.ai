@@ -72,8 +72,18 @@ Rails.application.routes.draw do
         post :run_tier0
         post :run_tier1
         post :run_tier2
+        get :evals, to: "evaluations#agent_evals"
       end
     end
     resources :api_keys, only: [:index, :destroy]
+    
+    # Evaluation observability
+    resources :evaluations, only: [:index, :show] do
+      collection do
+        get :tasks
+        get "tasks/:id", action: :task, as: :task
+        post :run_all_tier1
+      end
+    end
   end
 end

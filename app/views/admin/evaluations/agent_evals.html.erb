@@ -1,0 +1,102 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-6">
+    <%= link_to "← Back to Agent", admin_agent_path(@agent), class: "text-blue-600 hover:underline" %>
+  </div>
+
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold">Evaluations: <%= @agent.name %></h1>
+    <div class="flex gap-2">
+      <%= button_to "Run Tier 0", run_tier0_admin_agent_path(@agent), method: :post, 
+          class: "bg-gray-600 text-white px-3 py-2 rounded hover:bg-gray-700 text-sm" %>
+      <%= button_to "Run Tier 1", run_tier1_admin_agent_path(@agent), method: :post,
+          class: "bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 text-sm" %>
+      <%= button_to "Run Tier 2", run_tier2_admin_agent_path(@agent), method: :post,
+          class: "bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-sm" %>
+    </div>
+  </div>
+
+  <!-- Scores -->
+  <% if @scores.any? %>
+    <div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+      <div class="px-6 py-4 border-b">
+        <h2 class="text-xl font-semibold">Recent Scores</h2>
+      </div>
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tier</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Score</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Evaluated</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% @scores.each do |score| %>
+            <tr>
+              <td class="px-6 py-4 font-medium">Tier <%= score.tier %></td>
+              <td class="px-6 py-4">
+                <span class="text-2xl font-bold"><%= score.overall_score %></span>
+                <span class="text-gray-500">/100</span>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500">
+                <%= score.evaluated_at&.strftime("%Y-%m-%d %H:%M") %>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500">
+                <%= score.expires_at&.strftime("%Y-%m-%d") || "Never" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <!-- Eval Runs -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b">
+      <h2 class="text-xl font-semibold">Evaluation Runs (<%= @eval_runs.count %>)</h2>
+    </div>
+    <% if @eval_runs.any? %>
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Task</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">When</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% @eval_runs.each do |run| %>
+            <tr>
+              <td class="px-6 py-4 font-medium"><%= run.eval_task.name %></td>
+              <td class="px-6 py-4">
+                <span class="px-2 py-1 bg-gray-100 rounded text-sm"><%= run.eval_task.category %></span>
+              </td>
+              <td class="px-6 py-4">
+                <% status_color = { "pending" => "yellow", "running" => "blue", "completed" => "green", "failed" => "red" }[run.status] || "gray" %>
+                <span class="px-2 py-1 text-xs rounded-full bg-<%= status_color %>-100 text-<%= status_color %>-800">
+                  <%= run.status %>
+                </span>
+                <% if run.passed? %>✓<% elsif run.status == "completed" %>✗<% end %>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500">
+                <%= run.duration_seconds&.round(2) %>s
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500">
+                <%= time_ago_in_words(run.created_at) %> ago
+              </td>
+              <td class="px-6 py-4">
+                <%= link_to "View", admin_evaluation_path(run), class: "text-blue-600 hover:underline text-sm" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <div class="p-6 text-gray-500">No evaluation runs yet. Use the buttons above to start an evaluation.</div>
+    <% end %>
+  </div>
+</div>

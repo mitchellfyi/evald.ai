@@ -1,0 +1,54 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-6">
+    <%= link_to "← Back to Evaluations", admin_evaluations_path, class: "text-blue-600 hover:underline" %>
+  </div>
+
+  <h1 class="text-3xl font-bold mb-8">Evaluation Tasks</h1>
+
+  <% %w[coding research workflow].each do |category| %>
+    <% tasks = @eval_tasks.select { |t| t.category == category } %>
+    <% next if tasks.empty? %>
+    
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold mb-4 capitalize"><%= category %> Tasks</h2>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Difficulty</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Timeout</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Runs</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <% tasks.each do |task| %>
+              <tr>
+                <td class="px-6 py-4">
+                  <div class="font-medium"><%= task.name %></div>
+                  <div class="text-sm text-gray-500"><%= task.description&.truncate(80) %></div>
+                </td>
+                <td class="px-6 py-4">
+                  <% diff_color = { "easy" => "green", "medium" => "yellow", "hard" => "red" }[task.difficulty] || "gray" %>
+                  <span class="px-2 py-1 text-xs rounded bg-<%= diff_color %>-100 text-<%= diff_color %>-800">
+                    <%= task.difficulty || "N/A" %>
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500">
+                  <%= task.timeout_seconds %>s
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500">
+                  <%= task.eval_runs.count %>
+                </td>
+                <td class="px-6 py-4">
+                  <%= link_to "View", admin_evaluations_task_path(task), class: "text-blue-600 hover:underline text-sm" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
+</div>

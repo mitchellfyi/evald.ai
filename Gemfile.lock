@@ -357,7 +357,7 @@ GEM
       ffi (~> 1.12)
       logger
     ruby2_keywords (0.0.5)
-    secure_headers (7.1.0)
+    secure_headers (6.7.0)
     securerandom (0.4.1)
     sentry-rails (6.3.0)
       railties (>= 5.2.0)
@@ -483,7 +483,7 @@ DEPENDENCIES
   rubocop-github
   rubocop-performance
   rubocop-rails
-  secure_headers (~> 7.1)
+  secure_headers (~> 6.5)
   sentry-rails
   sentry-ruby
   shoulda-matchers
