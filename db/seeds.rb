@@ -17,10 +17,12 @@ else
   puts "Warning: No developer password in credentials, skipping admin user creation"
 end
 
-# Load all seed files from db/seeds/
-Dir[Rails.root.join("db/seeds/*.rb")].sort.each do |seed_file|
-  puts "Loading #{File.basename(seed_file)}..."
-  load seed_file
+# Load all seed files from db/seeds/ (skip in test to avoid polluting test DB)
+unless Rails.env.test?
+  Dir[Rails.root.join("db/seeds/*.rb")].sort.each do |seed_file|
+    puts "Loading #{File.basename(seed_file)}..."
+    load seed_file
+  end
 end
 
 # Optionally seed agents from GitHub

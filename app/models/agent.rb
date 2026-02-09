@@ -241,9 +241,9 @@ class Agent < ApplicationRecord
       .pluck(:metrics)
       .filter_map { |m| m["score"]&.to_f }
     low_variance = if run_scores.size >= 2
-      mean = run_scores.sum / run_scores.size
-      variance = run_scores.sum { |s| (s - mean)**2 } / run_scores.size
-      variance < 100 # standard deviation < 10 points
+                     mean = run_scores.sum / run_scores.size
+                     variance = run_scores.sum { |s| (s - mean)**2 } / run_scores.size
+                     variance < 100 # standard deviation < 10 points
     else
       false
     end

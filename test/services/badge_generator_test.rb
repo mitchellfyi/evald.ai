@@ -117,4 +117,55 @@ class BadgeGeneratorTest < ActiveSupport::TestCase
 
     assert result.include?(BadgeGenerator::COLORS[:critical])
   end
+
+  # Flat-square style tests
+  test "generate_svg supports flat-square style" do
+    result = BadgeGenerator.generate_svg(@agent, type: "score", style: "flat-square")
+
+    assert result.include?("<svg")
+    assert result.include?("</svg>")
+  end
+
+  # Custom label tests
+  test "generate_svg uses custom label when provided" do
+    result = BadgeGenerator.generate_svg(@agent, type: "score", style: "flat", label: "trust score")
+
+    assert result.include?("trust score")
+  end
+
+  test "generate_svg uses default label when label is nil" do
+    result = BadgeGenerator.generate_svg(@agent, type: "score", style: "flat")
+
+    assert result.include?("evald")
+  end
+
+  # Tier-specific score tests
+  test "generate_svg shows tier 0 score when tier param is 0" do
+    @agent.update!(tier0_repo_health: 80, tier0_documentation: 90)
+    result = BadgeGenerator.generate_svg(@agent, type: "score", style: "flat", tier: "0")
+
+    assert result.include?("<svg")
+    assert result.include?("%")
+  end
+
+  test "generate_svg shows N/A for tier 1 when no tier 1 data" do
+    result = BadgeGenerator.generate_svg(@agent, type: "score", style: "flat", tier: "1")
+
+    assert result.include?("N/A")
+    assert result.include?(BadgeGenerator::COLORS[:no_data])
+  end
+
+  # No data (grey) tests
+  test "COLORS has no_data color" do
+    assert BadgeGenerator::COLORS.key?(:no_data)
+    assert_equal "#9f9f9f", BadgeGenerator::COLORS[:no_data]
+  end
+
+  test "score badge shows grey for nil score" do
+    @agent.update!(score: nil, score_at_eval: nil, last_verified_at: nil)
+    result = BadgeGenerator.generate_svg(@agent, type: "score", style: "flat")
+
+    assert result.include?(BadgeGenerator::COLORS[:no_data])
+    assert result.include?("N/A")
+  end
 end

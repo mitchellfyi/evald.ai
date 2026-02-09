@@ -11,4 +11,7 @@ class PagesController < ApplicationController
 
   def methodology
   end
+
+  def badges
+  end
 end

@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   root "pages#home"
   get "about", to: "pages#about"
   get "methodology", to: "pages#methodology"
+  get "badges", to: "pages#badges"
 
   # Agent pages (SEO-friendly)
   resources :agents, only: [:index, :show], path: "agents" do

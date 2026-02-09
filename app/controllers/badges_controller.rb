@@ -3,7 +3,7 @@
 class BadgesController < ApplicationController
   skip_before_action :verify_authenticity_token, only: [:show]
 
-  VALID_STYLES = %w[ flat plastic for-the-badge ].freeze
+  VALID_STYLES = %w[ flat flat-square plastic for-the-badge ].freeze
   VALID_TYPES = %w[ score tier safety certification ].freeze
 
   def show
@@ -24,7 +24,10 @@ class BadgesController < ApplicationController
     badge_type = params[:type].to_s.downcase
     badge_type = "score" unless VALID_TYPES.include?(badge_type)
 
-    svg = BadgeGenerator.generate_svg(agent, type: badge_type, style: style)
+    label = params[:label].presence
+    tier_number = params[:tier].presence
+
+    svg = BadgeGenerator.generate_svg(agent, type: badge_type, style: style, label: label, tier: tier_number)
 
     set_cache_headers
     render plain: svg, content_type: "image/svg+xml"

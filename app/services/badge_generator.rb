@@ -25,22 +25,25 @@ class BadgeGenerator
     # Certification
     certified: "#4c1",
     pending: "#dfb317",
-    uncertified: "#9f9f9f"
+    uncertified: "#9f9f9f",
+
+    # No data
+    no_data: "#9f9f9f"
   }.freeze
 
   class << self
-    def generate_svg(agent, type:, style:)
+    def generate_svg(agent, type:, style:, label: nil, tier: nil)
       case type
       when "score"
-        generate_score_badge(agent, style)
+        generate_score_badge(agent, style, label: label, tier: tier)
       when "tier"
-        generate_tier_badge(agent, style)
+        generate_tier_badge(agent, style, label: label)
       when "safety"
-        generate_safety_badge(agent, style)
+        generate_safety_badge(agent, style, label: label)
       when "certification"
-        generate_certification_badge(agent, style)
+        generate_certification_badge(agent, style, label: label)
       else
-        generate_score_badge(agent, style)
+        generate_score_badge(agent, style, label: label, tier: tier)
       end
     end
 
@@ -55,49 +58,60 @@ class BadgeGenerator
 
     private
 
-    def generate_score_badge(agent, style)
-      score = agent.overall_score || 0
-      color = score_color(score)
+    def generate_score_badge(agent, style, label: nil, tier: nil)
+      score = if tier.present?
+                tier_score_for(agent, tier)
+              else
+                agent.overall_score
+              end
+
+      if score.nil?
+        color = COLORS[:no_data]
+        value = "N/A"
+      else
+        color = score_color(score)
+        value = "#{score.round}%"
+      end
 
       render_badge(
-        label: "evald",
-        value: "#{score.round}%",
+        label: label || "evald",
+        value: value,
         color: color,
         style: style
       )
     end
 
-    def generate_tier_badge(agent, style)
+    def generate_tier_badge(agent, style, label: nil)
       tier = agent.tier || "unrated"
       color = COLORS[tier.downcase.to_sym] || COLORS[:unrated]
 
       render_badge(
-        label: "evald tier",
+        label: label || "evald tier",
         value: tier.capitalize,
         color: color,
         style: style
       )
     end
 
-    def generate_safety_badge(agent, style)
+    def generate_safety_badge(agent, style, label: nil)
       safety = agent.safety_level || "unknown"
       color = safety_color(safety)
 
       render_badge(
-        label: "safety",
+        label: label || "safety",
         value: safety.capitalize,
         color: color,
         style: style
       )
     end
 
-    def generate_certification_badge(agent, style)
+    def generate_certification_badge(agent, style, label: nil)
       certified = agent.certified?
       status = certified ? "certified" : "uncertified"
       color = COLORS[status.to_sym]
 
       render_badge(
-        label: "evald",
+        label: label || "evald",
         value: certified ? "Certified" : "Uncertified",
         color: color,
         style: style
@@ -128,6 +142,8 @@ class BadgeGenerator
       case style
       when "plastic"
         render_plastic_badge(label, value, color)
+      when "flat-square"
+        render_flat_square_badge(label, value, color)
       when "for-the-badge"
         render_for_the_badge(label, value, color)
       else
@@ -158,6 +174,25 @@ class BadgeGenerator
             <text x="#{label_width / 2}" y="15" fill="#010101" fill-opacity=".3">#{escape_xml(label)}</text>
             <text x="#{label_width / 2}" y="14">#{escape_xml(label)}</text>
             <text x="#{label_width + (value_width / 2)}" y="15" fill="#010101" fill-opacity=".3">#{escape_xml(value)}</text>
+            <text x="#{label_width + (value_width / 2)}" y="14">#{escape_xml(value)}</text>
+          </g>
+        </svg>
+      SVG
+    end
+
+    def render_flat_square_badge(label, value, color)
+      label_width = calculate_text_width(label)
+      value_width = calculate_text_width(value)
+      total_width = label_width + value_width
+
+      <<~SVG
+        <svg xmlns="http://www.w3.org/2000/svg" width="#{total_width}" height="20">
+          <g>
+            <rect width="#{label_width}" height="20" fill="#555"/>
+            <rect x="#{label_width}" width="#{value_width}" height="20" fill="#{color}"/>
+          </g>
+          <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+            <text x="#{label_width / 2}" y="14">#{escape_xml(label)}</text>
             <text x="#{label_width + (value_width / 2)}" y="14">#{escape_xml(value)}</text>
           </g>
         </svg>
@@ -217,6 +252,15 @@ class BadgeGenerator
           </g>
         </svg>
       SVG
+    end
+
+    def tier_score_for(agent, tier_number)
+      case tier_number.to_s
+      when "0"
+        agent.compute_tier0_score
+      when "1"
+        agent.compute_tier1_score
+      end
     end
 
     def calculate_text_width(text, large: false)
