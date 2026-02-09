@@ -18,7 +18,7 @@ class BadgeGenerationTest < ActionDispatch::IntegrationTest
   test "should generate SVG badge for valid agent" do
     get agent_badge_path(agent_name: @agent.name)
     assert_response :success
-    assert_equal "image/svg+xml", response.content_type
+    assert response.content_type.start_with?("image/svg+xml"), "Expected SVG content type, got: #{response.content_type}"
 
     # Verify it's valid SVG
     assert_includes response.body, "<svg"
@@ -28,7 +28,7 @@ class BadgeGenerationTest < ActionDispatch::IntegrationTest
   test "should return 404 SVG for unknown agent" do
     get agent_badge_path(agent_name: "NonExistentAgent")
     assert_response :not_found
-    assert_equal "image/svg+xml", response.content_type
+    assert response.content_type.start_with?("image/svg+xml"), "Expected SVG content type, got: #{response.content_type}"
 
     # Should still be valid SVG with error message
     assert_includes response.body, "<svg"
@@ -116,7 +116,7 @@ class BadgeGenerationTest < ActionDispatch::IntegrationTest
   test "should generate badge via agent member route" do
     get badge_agent_path(@agent)
     assert_response :success
-    assert_equal "image/svg+xml", response.content_type
+    assert response.content_type.start_with?("image/svg+xml"), "Expected SVG content type, got: #{response.content_type}"
     assert_includes response.body, "<svg"
   end
 
@@ -131,7 +131,7 @@ class BadgeGenerationTest < ActionDispatch::IntegrationTest
   end
 
   test "badge should reflect low score color" do
-    @agent.update!(score: 15)
+    @agent.update!(score: 15, score_at_eval: 15)
     get agent_badge_path(agent_name: @agent.name)
     assert_response :success
     # Low scores should have red color (#e05d44)

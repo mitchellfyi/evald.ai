@@ -7,7 +7,12 @@ class BadgesController < ApplicationController
   VALID_TYPES = %w[score tier safety certification].freeze
 
   def show
-    agent = Agent.find_by(name: params[:agent_name])
+    # Support both /badge/:agent_name and /agents/:id/badge routes
+    agent = if params[:id].present?
+      Agent.published.find_by(slug: params[:id]) || Agent.published.find_by(id: params[:id])
+    else
+      Agent.find_by(name: params[:agent_name])
+    end
 
     unless agent
       return render plain: not_found_svg, content_type: "image/svg+xml", status: :not_found

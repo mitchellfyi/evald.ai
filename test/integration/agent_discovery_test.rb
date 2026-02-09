@@ -50,15 +50,13 @@ class AgentDiscoveryTest < ActionDispatch::IntegrationTest
   end
 
   test "should return 404 for unpublished agent" do
-    assert_raises(ActiveRecord::RecordNotFound) do
-      get agent_path(@unpublished_agent)
-    end
+    get agent_path(@unpublished_agent)
+    assert_response :not_found
   end
 
   test "should return 404 for non-existent agent" do
-    assert_raises(ActiveRecord::RecordNotFound) do
-      get agent_path(id: "nonexistent-agent")
-    end
+    get agent_path(id: "nonexistent-agent")
+    assert_response :not_found
   end
 
   # === Agent Compare Tests ===

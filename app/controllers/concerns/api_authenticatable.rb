@@ -23,4 +23,8 @@ module ApiAuthenticatable
   def current_api_key
     @current_api_key
   end
+
+  def current_user
+    @current_user
+  end
 end

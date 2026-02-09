@@ -1,0 +1,57 @@
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-3xl font-bold mb-8">Compare Agents</h1>
+
+  <% if @agents.empty? %>
+    <p class="text-gray-600">No agents found to compare. Please provide valid agent slugs.</p>
+  <% else %>
+    <div class="grid grid-cols-1 md:grid-cols-<%= [@agents.size, 5].min %> gap-6">
+      <% @agents.each do |agent| %>
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-xl font-semibold mb-2"><%= agent.name %></h2>
+          <p class="text-gray-600 mb-4"><%= agent.category %></p>
+          
+          <div class="mb-4">
+            <span class="text-3xl font-bold text-<%= agent.badge_color %>">
+              <%= number_with_precision(agent.decayed_score, precision: 1) || 'N/A' %>
+            </span>
+            <span class="text-gray-500">/100</span>
+          </div>
+
+          <div class="space-y-2 text-sm">
+            <% if agent.tier0_summary.present? %>
+              <div>
+                <span class="font-medium">Tier 0:</span>
+                <span class="text-gray-600"><%= agent.tier0_summary.values.compact.size %> signals</span>
+              </div>
+            <% end %>
+            <% if agent.tier1_summary.present? %>
+              <div>
+                <span class="font-medium">Tier 1:</span>
+                <span class="text-gray-600"><%= agent.tier1_summary.values.compact.size %> metrics</span>
+              </div>
+            <% end %>
+            <% if agent.last_verified_at %>
+              <div>
+                <span class="font-medium">Last verified:</span>
+                <span class="text-gray-600"><%= time_ago_in_words(agent.last_verified_at) %> ago</span>
+              </div>
+            <% end %>
+          </div>
+
+          <%= link_to "View Profile", agent_path(agent), class: "mt-4 inline-block text-blue-600 hover:underline" %>
+        </div>
+      <% end %>
+    </div>
+
+    <% if @agents.size > 1 %>
+      <div class="mt-8 bg-blue-50 rounded-lg p-6">
+        <h3 class="text-lg font-semibold mb-2">Recommendation</h3>
+        <% best_agent = @agents.max_by { |a| a.decayed_score || 0 } %>
+        <p class="text-gray-700">
+          Based on Evaled scores, <strong><%= best_agent.name %></strong> has the highest score 
+          (<%= number_with_precision(best_agent.decayed_score, precision: 1) %>).
+        </p>
+      </div>
+    <% end %>
+  <% end %>
+</div>

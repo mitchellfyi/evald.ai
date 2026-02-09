@@ -18,7 +18,7 @@ module Api
       end
 
       def score
-        agent = Agent.published.find_by!(slug: params[:agent_id])
+        agent = Agent.published.find_by!(slug: params[:id])
         render json: score_response(agent)
       end
 
@@ -54,7 +54,7 @@ module Api
           agent: agent.slug,
           name: agent.name,
           category: agent.category,
-          score: agent.decayed_score,
+          score: agent.decayed_score&.to_f,
           last_verified: agent.last_verified_at&.iso8601
         }
       end
@@ -71,8 +71,8 @@ module Api
           },
           repo_url: agent.repo_url,
           website_url: agent.website_url,
-          score: agent.decayed_score,
-          score_at_eval: agent.score_at_eval,
+          score: agent.decayed_score&.to_f,
+          score_at_eval: agent.score_at_eval&.to_f,
           tier0: agent.tier0_summary,
           tier1: agent.tier1_summary,
           last_verified: agent.last_verified_at&.iso8601,
@@ -84,7 +84,7 @@ module Api
       def score_response(agent)
         {
           agent: agent.slug,
-          score: agent.decayed_score,
+          score: agent.decayed_score&.to_f,
           tier0: agent.tier0_summary,
           tier1: agent.tier1_summary,
           last_verified: agent.last_verified_at&.iso8601

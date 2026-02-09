@@ -1,7 +1,7 @@
 module Api
   module V1
     class ClaimsController < BaseController
-      before_action :authenticate_user!
+      include ApiAuthenticatable
 
       def create
         agent = Agent.find(params[:agent_id])

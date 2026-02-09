@@ -52,7 +52,7 @@ module Api
               last_verified: nil
             }
           else
-            score = agent.decayed_score || 0
+            score = (agent.decayed_score || 0).to_f
             {
               agent: agent.slug,
               name: agent.name,

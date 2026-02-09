@@ -100,13 +100,13 @@ class Agent < ApplicationRecord
 
   def tier0_summary
     {
-      repo_health: tier0_repo_health,
-      bus_factor: tier0_bus_factor,
-      dependency_risk: tier0_dependency_risk,
-      documentation: tier0_documentation,
-      community: tier0_community,
-      license: tier0_license,
-      maintenance: tier0_maintenance
+      repo_health: tier0_repo_health&.to_f,
+      bus_factor: tier0_bus_factor&.to_f,
+      dependency_risk: tier0_dependency_risk&.to_f,
+      documentation: tier0_documentation&.to_f,
+      community: tier0_community&.to_f,
+      license: tier0_license&.to_f,
+      maintenance: tier0_maintenance&.to_f
     }.compact
   end
 
@@ -114,18 +114,18 @@ class Agent < ApplicationRecord
     return {} unless tier1_completion_rate.present?
 
     {
-      completion_rate: tier1_completion_rate,
-      accuracy: tier1_accuracy,
-      cost_efficiency: tier1_cost_efficiency,
-      scope_discipline: tier1_scope_discipline,
-      safety: tier1_safety
+      completion_rate: tier1_completion_rate&.to_f,
+      accuracy: tier1_accuracy&.to_f,
+      cost_efficiency: tier1_cost_efficiency&.to_f,
+      scope_discipline: tier1_scope_discipline&.to_f,
+      safety: tier1_safety&.to_f
     }.compact
   end
 
   def badge_color
     return "gray" unless score
 
-    case score
+    case score.to_f
     when 90..100 then "brightgreen"
     when 80..89 then "green"
     when 70..79 then "yellowgreen"
@@ -133,6 +133,41 @@ class Agent < ApplicationRecord
     when 50..59 then "orange"
     else "red"
     end
+  end
+
+  # Alias for decayed_score - used by BadgeGenerator
+  def overall_score
+    decayed_score
+  end
+
+  # Compute tier based on score
+  def tier
+    score_value = decayed_score || 0
+    case score_value.to_f
+    when 90..100 then "platinum"
+    when 80...90 then "gold"
+    when 70...80 then "silver"
+    when 60...70 then "bronze"
+    else "unrated"
+    end
+  end
+
+  # Safety level based on safety score
+  def safety_level
+    safety = current_safety_score&.score || tier1_safety
+    return "unknown" unless safety
+
+    case safety.to_f * 100
+    when 80..100 then "safe"
+    when 60...80 then "caution"
+    when 40...60 then "warning"
+    else "danger"
+    end
+  end
+
+  # Check if agent has valid certification
+  def certified?
+    security_certifications.active.any?
   end
 
   def claimed?

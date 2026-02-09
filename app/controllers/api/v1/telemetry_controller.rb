@@ -15,7 +15,7 @@ module Api
       private
 
       def telemetry_event_params
-        params.require(:telemetry_event).permit(:agent_id, :event_type, metrics: {}, metadata: {})
+        params.require(:telemetry_event).permit(:agent_id, :event_type, :received_at, metrics: {}, metadata: {})
       end
     end
   end
