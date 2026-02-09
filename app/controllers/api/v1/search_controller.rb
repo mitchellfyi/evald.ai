@@ -35,7 +35,7 @@ module Api
           slug: agent.slug,
           name: agent.name,
           category: agent.category,
-          score: agent.score,
+          score: agent.decayed_score.to_f,
           tier: agent.tier,
           description: agent.description&.truncate(200)
         }

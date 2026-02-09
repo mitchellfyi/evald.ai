@@ -37,7 +37,7 @@ bin/rails test
 | Workflow | File | Trigger | Purpose |
 |----------|------|---------|---------|
 | **CI** | `ci.yml` | Push to `main`, all PRs | Runs linting, security scans, and tests |
-| **Deploy** | `deploy.yml` | Push to `main` | Deploys to production via Dokku |
+| **Deploy** | `deploy.yml` | After CI passes on `main` | Deploys to production via Dokku |
 | **Rollback** | `rollback.yml` | Manual dispatch | Deploys a specific commit SHA to production |
 
 ### CI Jobs
@@ -49,7 +49,8 @@ bin/rails test
 
 ### How Deploys Work
 
-- Deploys are triggered automatically on every push to `main`.
+- Deploys are triggered automatically after the CI workflow passes on `main` (via `workflow_run`).
+- This ensures code that hasn't passed all checks can never be deployed.
 - Only one deploy runs at a time (concurrency group: `deploy-production`). A newer push cancels any in-progress deploy.
 - Each deploy logs a summary with the commit SHA, environment, and timestamp.
 

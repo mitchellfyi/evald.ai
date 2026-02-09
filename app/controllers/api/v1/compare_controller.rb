@@ -26,7 +26,7 @@ module Api
           slug: agent.slug,
           name: agent.name,
           category: agent.category,
-          score: agent.score,
+          score: agent.decayed_score.to_f,
           tier: agent.tier,
           tier_scores: tier_breakdown(agent),
           strengths: [agent.category].compact.first(3),
@@ -44,10 +44,10 @@ module Api
       def comparison_summary(agents)
         return {} if agents.empty?
 
-        best = agents.max_by(&:score)
+        best = agents.max_by { |a| a.decayed_score.to_f }
         {
           highest_score: best&.slug,
-          average_score: (agents.sum(&:score).to_f / agents.size).round(1),
+          average_score: (agents.sum { |a| a.decayed_score.to_f } / agents.size).round(1),
           count: agents.size
         }
       end
