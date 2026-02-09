@@ -85,17 +85,36 @@
       </div>
       
       <!-- Score Card -->
-      <div class="text-center bg-gray-50 rounded-xl p-6 min-w-[160px]">
+      <div class="text-center bg-gray-50 rounded-xl p-6 min-w-[180px]">
+        <!-- Tier Badge -->
+        <div class="mb-2">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold <%= tier_badge_class(@agent.tier) %>">
+            <%= tier_label(@agent.tier) %>
+          </span>
+        </div>
+        
+        <!-- Main Score -->
         <div class="text-5xl font-bold <%= score_color_class(@agent.decayed_score) %>">
           <%= @agent.decayed_score&.round || 'N/A' %>
         </div>
         <div class="text-gray-500 text-sm mt-1">Evald Score</div>
+        
+        <!-- Score Decay Info -->
+        <% if @agent.score_at_eval.present? && @agent.decayed_score.present? && (@agent.score_at_eval - @agent.decayed_score).abs > 0.5 %>
+          <div class="text-gray-400 text-xs mt-1" title="Score decays over time to reflect data freshness">
+            <span class="line-through"><%= @agent.score_at_eval.round %></span> at eval
+          </div>
+        <% end %>
+        
+        <!-- Confidence Badge -->
         <% confidence = @agent.confidence_level %>
-        <div class="mt-2" title="<%= confidence_tooltip(confidence) %>">
+        <div class="mt-3" title="<%= confidence_tooltip(confidence) %>">
           <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= confidence_badge_class(confidence) %>">
             <%= confidence_label(confidence) %>
           </span>
         </div>
+        
+        <!-- Verification Time -->
         <% if @agent.last_verified_at.present? %>
           <div class="text-gray-400 text-xs mt-2">
             Verified <%= time_ago_in_words(@agent.last_verified_at) %> ago

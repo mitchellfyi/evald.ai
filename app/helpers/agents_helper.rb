@@ -56,4 +56,24 @@ module AgentsHelper
       "Minimal data available. This score may change significantly as more evaluations are completed."
     end
   end
+
+  def tier_badge_class(tier)
+    case tier.to_s
+    when "platinum" then "bg-gradient-to-r from-slate-300 to-slate-400 text-slate-800"
+    when "gold" then "bg-gradient-to-r from-yellow-300 to-yellow-400 text-yellow-800"
+    when "silver" then "bg-gradient-to-r from-gray-200 to-gray-300 text-gray-700"
+    when "bronze" then "bg-gradient-to-r from-orange-200 to-orange-300 text-orange-800"
+    else "bg-gray-100 text-gray-500"
+    end
+  end
+
+  def tier_label(tier)
+    case tier.to_s
+    when "platinum" then "⭐ Platinum"
+    when "gold" then "🥇 Gold"
+    when "silver" then "🥈 Silver"
+    when "bronze" then "🥉 Bronze"
+    else "Unrated"
+    end
+  end
 end
