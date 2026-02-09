@@ -60,7 +60,7 @@ Evald does.
 
 ## How it works
 
-Every agent in the registry gets an **Evald Score** (0\u2013100) computed from two tiers of evaluation.
+Every agent gets an **Evald Score** (0\u2013100) computed from two tiers of evaluation.
 
 ### Tier 0 \u2014 Passive Signals (automated, no agent cooperation needed)
 
