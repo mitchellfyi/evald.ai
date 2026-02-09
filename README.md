@@ -28,6 +28,11 @@ bin/dev
 
 The app will be available at `http://localhost:3000`.
 
+## Documentation
+
+- [API Documentation](docs/API.md) - API endpoints and authentication
+- [Architecture Decision Records](docs/adr/) - Key technical decisions
+
 ### Configuration
 
 Edit `.env` with your local settings:
