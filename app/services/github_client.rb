@@ -17,6 +17,10 @@ class GithubClient
     get("/repos/#{owner}/#{name}/issues", state: state)
   end
 
+  def contributors(owner, name)
+    get("/repos/#{owner}/#{name}/contributors")
+  end
+
   private
 
   def get(path, params = {})
