@@ -32,7 +32,15 @@ module Admin
     end
 
     def user_params
-      params.require(:user).permit(:email, :admin)
+      permitted = params.require(:user).permit(:email)
+
+      # Only allow admin role changes with explicit authorization
+      # Prevent self-demotion which could lock out all admins
+      if params[:user][:admin].present? && @user != current_user
+        permitted[:admin] = params[:user][:admin]
+      end
+
+      permitted
     end
   end
 end
