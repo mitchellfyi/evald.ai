@@ -18,8 +18,8 @@ class AgentScoreMailerTest < ActionMailer::TestCase
       email.deliver_now
     end
 
-    assert_equal ["owner@example.com"], email.to
-    assert_equal ["notifications@evaled.ai"], email.from
+    assert_equal [ "owner@example.com" ], email.to
+    assert_equal [ "notifications@evaled.ai" ], email.from
   end
 
   test "decay_warning includes agent name in subject" do
@@ -52,8 +52,8 @@ class AgentScoreMailerTest < ActionMailer::TestCase
     # Threshold
     assert_includes html_body, "80%"
 
-    # Re-evaluate link
-    assert_match(/href=.*agents.*testagent/i, html_body)
+    # Re-evaluate link (use actual agent slug from factory)
+    assert_match(/href=.*agents.*#{@agent.slug}/i, html_body)
   end
 
   test "decay_warning text body includes all required information" do
