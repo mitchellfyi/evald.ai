@@ -4,6 +4,7 @@ require "test_helper"
 
 class PendingAgentTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
+
   test "factory creates valid pending agent" do
     pending_agent = build(:pending_agent)
     assert pending_agent.valid?
