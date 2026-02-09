@@ -8,6 +8,7 @@ class Agent < ApplicationRecord
   has_many :security_scans, dependent: :destroy
   has_many :safety_scores, dependent: :destroy
   has_many :agent_claims, dependent: :destroy
+  has_many :notification_preferences, dependent: :destroy
   has_many :security_audits, dependent: :destroy
   has_many :security_certifications, dependent: :destroy
   has_many :webhook_endpoints, dependent: :destroy

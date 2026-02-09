@@ -15,9 +15,22 @@
               </svg>
               Verified
             </span>
+          <% elsif @agent.claimed? %>
+            <span class="flex items-center text-blue-600 text-sm">
+              <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+              </svg>
+              Claimed
+            </span>
+          <% else %>
+            <span class="text-gray-400 text-sm italic">Unclaimed</span>
           <% end %>
         </div>
         
+        <% if @agent.tagline.present? %>
+          <p class="text-indigo-600 font-medium mb-2"><%= @agent.tagline %></p>
+        <% end %>
+
         <% if @agent.builder_name.present? %>
           <p class="text-gray-500 mb-2">
             by 
@@ -32,6 +45,10 @@
         <% if @agent.description.present? %>
           <p class="text-gray-600 mb-4"><%= @agent.description %></p>
         <% end %>
+
+        <% if @agent.use_case.present? %>
+          <p class="text-gray-500 text-sm mb-4"><strong>Use case:</strong> <%= @agent.use_case %></p>
+        <% end %>
         
         <div class="flex space-x-4">
           <% if @agent.repo_url.present? %>
@@ -44,6 +61,24 @@
             <a href="<%= @agent.website_url %>" class="text-gray-500 hover:text-gray-700 flex items-center" target="_blank">
               <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
               Website
+            </a>
+          <% end %>
+          <% if @agent.documentation_url.present? %>
+            <a href="<%= @agent.documentation_url %>" class="text-gray-500 hover:text-gray-700 flex items-center" target="_blank">
+              <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              Docs
+            </a>
+          <% end %>
+          <% if @agent.changelog_url.present? %>
+            <a href="<%= @agent.changelog_url %>" class="text-gray-500 hover:text-gray-700 flex items-center" target="_blank">
+              <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              Changelog
+            </a>
+          <% end %>
+          <% if @agent.demo_url.present? %>
+            <a href="<%= @agent.demo_url %>" class="text-gray-500 hover:text-gray-700 flex items-center" target="_blank">
+              <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Demo
             </a>
           <% end %>
         </div>
@@ -69,6 +104,28 @@
       </div>
     </div>
   </div>
+
+  <!-- Claim CTA for unclaimed agents -->
+  <% unless @agent.claimed? %>
+    <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-6 mb-8">
+      <div class="flex items-start space-x-4">
+        <div class="flex-shrink-0">
+          <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-lg font-bold text-indigo-900">Are you the builder of <%= @agent.name %>?</h3>
+          <p class="text-indigo-700 text-sm mt-1 mb-4">Claim this profile to add context, respond to findings, set notification preferences, and get your badge embed code.</p>
+          <% if current_user %>
+            <%= button_to "Claim This Profile", agent_claim_path(@agent), method: :post, class: "inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium" %>
+          <% else %>
+            <%= link_to "Sign in to Claim", new_user_session_path, class: "inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
 
   <!-- Score Breakdown -->
   <div class="grid md:grid-cols-2 gap-8 mb-8">
@@ -132,7 +189,7 @@
       <img src="<%= badge_agent_path(@agent, format: :svg) %>" alt="Evald Score" class="h-6">
     </div>
     <div class="bg-gray-50 rounded-lg p-4">
-      <code class="text-sm text-gray-700 break-all">[![Evald Score](https://evald.ai<%= badge_agent_path(@agent, format: :svg) %>)](https://evald.ai<%= agent_path(@agent) %>)</code>
+      <code class="text-sm text-gray-700 break-all">[![Evald Score](<%= badge_agent_url(@agent, format: :svg) %>)](<%= agent_url(@agent) %>)</code>
     </div>
   </div>
 

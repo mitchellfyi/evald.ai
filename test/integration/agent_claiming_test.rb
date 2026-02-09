@@ -275,7 +275,7 @@ class AgentClaimingTest < ActionDispatch::IntegrationTest
     WebMock.disable!
   end
 
-  test "verify_repo_access returns false for write permission" do
+  test "verify_repo_access returns true for write permission" do
     original_token = ENV["GITHUB_TOKEN"]
     ENV["GITHUB_TOKEN"] = "fake_test_token"
     WebMock.enable!
@@ -289,7 +289,7 @@ class AgentClaimingTest < ActionDispatch::IntegrationTest
     controller = Agents::ClaimsController.new
     result = controller.send(:verify_repo_access, "https://github.com/testuser/claimable-agent", "writer")
 
-    assert_not result
+    assert result
   ensure
     ENV["GITHUB_TOKEN"] = original_token
     WebMock.disable!

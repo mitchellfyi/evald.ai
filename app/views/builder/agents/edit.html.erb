@@ -1,0 +1,129 @@
+<% content_for :title, "Edit #{@agent.name} | Builder Dashboard | Evald.ai" %>
+
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center space-x-3 mb-8">
+    <%= link_to "← Dashboard", builder_root_path, class: "text-gray-500 hover:text-gray-700" %>
+    <span class="text-gray-300">/</span>
+    <h1 class="text-2xl font-bold text-gray-900"><%= @agent.name %></h1>
+  </div>
+
+  <!-- Profile Editing -->
+  <div class="bg-white rounded-xl p-6 shadow mb-8">
+    <h2 class="text-lg font-bold text-gray-900 mb-4">Edit Profile</h2>
+    <p class="text-gray-500 text-sm mb-6">Add context to your agent's profile. You can update descriptions and links but cannot modify scores or evaluation data.</p>
+
+    <%= form_with model: @agent, url: builder_agent_path(@agent), method: :patch, class: "space-y-6" do |f| %>
+      <div>
+        <%= f.label :tagline, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.text_field :tagline, class: "w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500", placeholder: "A short tagline for your agent" %>
+      </div>
+
+      <div>
+        <%= f.label :description, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.text_area :description, rows: 3, class: "w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500", placeholder: "Describe what your agent does" %>
+      </div>
+
+      <div>
+        <%= f.label :use_case, "Use Case Context", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.text_area :use_case, rows: 3, class: "w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500", placeholder: "Describe the intended use case and target audience" %>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-4">
+        <div>
+          <%= f.label :documentation_url, "Documentation URL", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.url_field :documentation_url, class: "w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500", placeholder: "https://docs.example.com" %>
+        </div>
+        <div>
+          <%= f.label :changelog_url, "Changelog URL", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.url_field :changelog_url, class: "w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500", placeholder: "https://example.com/changelog" %>
+        </div>
+        <div>
+          <%= f.label :demo_url, "Demo URL", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= f.url_field :demo_url, class: "w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500", placeholder: "https://demo.example.com" %>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <%= f.submit "Save Changes", class: "px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Notification Preferences -->
+  <div class="bg-white rounded-xl p-6 shadow mb-8">
+    <h2 class="text-lg font-bold text-gray-900 mb-4">Notification Preferences</h2>
+    <%= form_with model: @notification_preference, url: builder_agent_notification_preferences_path(@agent), method: :patch, class: "space-y-4" do |f| %>
+      <div class="space-y-3">
+        <label class="flex items-center space-x-3">
+          <%= f.check_box :score_changes, class: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+          <span class="text-gray-700">Score changes</span>
+        </label>
+        <label class="flex items-center space-x-3">
+          <%= f.check_box :new_eval_results, class: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+          <span class="text-gray-700">New evaluation results</span>
+        </label>
+        <label class="flex items-center space-x-3">
+          <%= f.check_box :comparison_mentions, class: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+          <span class="text-gray-700">Comparison mentions</span>
+        </label>
+        <label class="flex items-center space-x-3">
+          <%= f.check_box :email_enabled, class: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" %>
+          <span class="text-gray-700">Email notifications enabled</span>
+        </label>
+      </div>
+      <div class="flex justify-end">
+        <%= f.submit "Update Preferences", class: "px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 font-medium cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Badge Embed Code -->
+  <div class="bg-white rounded-xl p-6 shadow mb-8">
+    <h2 class="text-lg font-bold text-gray-900 mb-4">Badge Embed Code</h2>
+    <div class="flex items-center space-x-4 mb-4">
+      <img src="<%= badge_agent_path(@agent, format: :svg) %>" alt="Evald Score" class="h-6">
+    </div>
+    <div class="bg-gray-50 rounded-lg p-4">
+      <code class="text-sm text-gray-700 break-all">[![Evald Score](<%= badge_agent_url(@agent, format: :svg) %>)](<%= agent_url(@agent) %>)</code>
+    </div>
+  </div>
+
+  <!-- Score Breakdown (read-only) -->
+  <div class="bg-white rounded-xl p-6 shadow">
+    <h2 class="text-lg font-bold text-gray-900 mb-4">Detailed Score Breakdown</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-3">Tier 0 — Passive Signals (40%)</h3>
+        <div class="space-y-3">
+          <% @agent.tier0_summary.each do |signal, score| %>
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600"><%= signal.to_s.titleize %></span>
+                <span class="font-medium"><%= score&.round(1) %></span>
+              </div>
+              <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full <%= score_bar_class(score) %> rounded-full" style="width: <%= score || 0 %>%"></div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-sm font-medium text-gray-500 mb-3">Tier 1 — Task Completion (60%)</h3>
+        <div class="space-y-3">
+          <% @agent.tier1_summary.each do |metric, value| %>
+            <div>
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600"><%= metric.to_s.titleize %></span>
+                <span class="font-medium"><%= ((value || 0) * 100).round(1) %>%</span>
+              </div>
+              <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full <%= score_bar_class((value || 0) * 100) %> rounded-full" style="width: <%= (value || 0) * 100 %>%"></div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

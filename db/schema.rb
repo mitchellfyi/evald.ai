@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_10_030000) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_10_030002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -82,12 +82,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030000) do
     t.string "builder_name"
     t.string "builder_url"
     t.string "category"
+    t.string "changelog_url"
     t.string "claim_status", default: "unclaimed"
     t.datetime "claimed_at"
     t.bigint "claimed_by_user_id"
     t.datetime "created_at", null: false
     t.string "decay_rate", default: "standard"
+    t.string "demo_url"
     t.string "description"
+    t.string "documentation_url"
     t.boolean "featured", default: false
     t.integer "github_id"
     t.datetime "github_last_updated_at"
@@ -103,6 +106,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030000) do
     t.decimal "score_at_eval", precision: 5, scale: 2
     t.string "slug", null: false
     t.integer "stars"
+    t.string "tagline"
     t.decimal "tier0_bus_factor", precision: 5, scale: 2
     t.decimal "tier0_community", precision: 5, scale: 2
     t.decimal "tier0_dependency_risk", precision: 5, scale: 2
@@ -116,6 +120,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030000) do
     t.decimal "tier1_safety", precision: 5, scale: 4
     t.decimal "tier1_scope_discipline", precision: 5, scale: 4
     t.datetime "updated_at", null: false
+    t.text "use_case"
     t.string "website_url"
     t.index ["category"], name: "index_agents_on_category"
     t.index ["claimed_by_user_id"], name: "index_agents_on_claimed_by_user_id"
@@ -219,6 +224,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030000) do
     t.index ["agent_id"], name: "index_evaluations_on_agent_id"
     t.index ["status"], name: "index_evaluations_on_status"
     t.index ["tier"], name: "index_evaluations_on_tier"
+  end
+
+  create_table "notification_preferences", force: :cascade do |t|
+    t.bigint "agent_id", null: false
+    t.boolean "comparison_mentions", default: false
+    t.datetime "created_at", null: false
+    t.boolean "email_enabled", default: true
+    t.boolean "new_eval_results", default: true
+    t.boolean "score_changes", default: true
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["agent_id"], name: "index_notification_preferences_on_agent_id"
+    t.index ["user_id", "agent_id"], name: "index_notification_preferences_on_user_id_and_agent_id", unique: true
+    t.index ["user_id"], name: "index_notification_preferences_on_user_id"
   end
 
   create_table "pending_agents", force: :cascade do |t|
@@ -400,6 +419,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030000) do
   add_foreign_key "eval_runs", "agents"
   add_foreign_key "eval_runs", "eval_tasks"
   add_foreign_key "evaluations", "agents"
+  add_foreign_key "notification_preferences", "agents"
+  add_foreign_key "notification_preferences", "users"
   add_foreign_key "pending_agents", "users", column: "reviewed_by_id"
   add_foreign_key "safety_scores", "agents"
   add_foreign_key "security_audits", "agents"

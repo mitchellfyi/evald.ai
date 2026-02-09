@@ -1,0 +1,48 @@
+<% content_for :title, "Builder Dashboard | Evald.ai" %>
+
+<div class="max-w-4xl mx-auto">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Builder Dashboard</h1>
+  </div>
+
+  <% if @claimed_agents.any? %>
+    <div class="space-y-6">
+      <% @claimed_agents.each do |agent| %>
+        <div class="bg-white rounded-xl p-6 shadow">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="flex items-center space-x-3 mb-2">
+                <h2 class="text-xl font-bold text-gray-900">
+                  <%= link_to agent.name, agent_path(agent), class: "hover:text-indigo-600" %>
+                </h2>
+                <span class="px-2 py-1 rounded-full text-xs font-medium <%= agent.verified? ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700' %>">
+                  <%= agent.claim_status.capitalize %>
+                </span>
+              </div>
+              <p class="text-gray-500 text-sm mb-3"><%= agent.description %></p>
+              <div class="flex space-x-4">
+                <%= link_to "Edit Profile", edit_builder_agent_path(agent), class: "text-indigo-600 hover:text-indigo-700 text-sm font-medium" %>
+                <%= link_to "View Public Page", agent_path(agent), class: "text-gray-500 hover:text-gray-700 text-sm" %>
+              </div>
+            </div>
+            <div class="text-center bg-gray-50 rounded-xl p-4 min-w-[100px]">
+              <div class="text-3xl font-bold <%= score_color_class(agent.decayed_score) %>">
+                <%= agent.decayed_score&.round || 'N/A' %>
+              </div>
+              <div class="text-gray-500 text-xs mt-1">Evald Score</div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-xl p-8 shadow text-center">
+      <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+      </svg>
+      <h2 class="text-xl font-bold text-gray-900 mb-2">No claimed agents yet</h2>
+      <p class="text-gray-500 mb-6">Find your agent on Evald and claim it to manage your profile, respond to findings, and track your score.</p>
+      <%= link_to "Browse Agents", agents_path, class: "inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium" %>
+    </div>
+  <% end %>
+</div>

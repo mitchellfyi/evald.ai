@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 Rails.application.routes.draw do
   # Authentication
-  devise_for :users
+  devise_for :users, controllers: { omniauth_callbacks: "users/omniauth_callbacks" }
 
   # Health check
   get "up" => "rails/health#show", :as => :rails_health_check
@@ -28,6 +28,14 @@ Rails.application.routes.draw do
     end
   end
   get "compare", to: "agents#compare"
+
+  # Builder dashboard
+  namespace :builder do
+    root to: "dashboard#index"
+    resources :agents, only: [:edit, :update] do
+      resource :notification_preferences, only: [:edit, :update]
+    end
+  end
 
   # Public badge endpoint (for README embeds)
   get "badge/:agent_name", to: "badges#show", as: :agent_badge
