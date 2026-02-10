@@ -19,6 +19,9 @@ Rails.application.routes.draw do
   # Agent submission (public)
   resource :agent_submissions, only: [:new, :create], path: "agents/submit", controller: "agents/submissions"
 
+  # Documentation
+  get "docs/api", to: "docs#api", as: :api_docs
+
   # Agent pages (SEO-friendly)
   resources :agents, only: [:index, :show], path: "agents" do
     member do

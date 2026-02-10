@@ -1,0 +1,492 @@
+<% content_for :title, "API Documentation - Evald.ai" %>
+<% content_for :description, "Complete API documentation for Evald.ai. Access agent scores, compare agents, and integrate trust data into your workflows." %>
+
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-4xl font-bold text-gray-900 mb-4">API Documentation</h1>
+  
+  <p class="text-xl text-gray-600 mb-8">
+    Access Evald agent scores and data programmatically. Perfect for CI/CD integrations, 
+    dashboards, and building trust-aware applications.
+  </p>
+
+  <!-- Quick Links -->
+  <div class="bg-white rounded-xl p-6 shadow mb-8">
+    <h2 class="text-lg font-bold text-gray-900 mb-4">Quick Navigation</h2>
+    <div class="grid md:grid-cols-2 gap-4">
+      <a href="#authentication" class="flex items-center text-indigo-600 hover:text-indigo-700">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+        </svg>
+        Authentication
+      </a>
+      <a href="#agents" class="flex items-center text-indigo-600 hover:text-indigo-700">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+        Agent Endpoints
+      </a>
+      <a href="#compare" class="flex items-center text-indigo-600 hover:text-indigo-700">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        Compare Agents
+      </a>
+      <a href="#rate-limits" class="flex items-center text-indigo-600 hover:text-indigo-700">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        Rate Limits
+      </a>
+    </div>
+  </div>
+
+  <!-- Base URL -->
+  <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-8">
+    <p class="text-indigo-800 text-sm">
+      <strong>Base URL:</strong> <code class="bg-indigo-100 px-2 py-1 rounded">https://evald.ai/api/v1</code>
+    </p>
+  </div>
+
+  <!-- Authentication Section -->
+  <div id="authentication" class="bg-white rounded-xl p-8 shadow mb-8 scroll-mt-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Authentication</h2>
+    
+    <p class="text-gray-600 mb-6">
+      All API requests require a Bearer token in the Authorization header. 
+      You can generate API keys from your <%= link_to "Builder Dashboard", builder_root_path, class: "text-indigo-600 hover:text-indigo-700 underline" %>.
+    </p>
+    
+    <div class="bg-gray-900 rounded-lg overflow-hidden mb-6">
+      <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+        <span class="text-gray-400 text-sm">HTTP Header</span>
+      </div>
+      <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>Authorization: Bearer your-api-key</code></pre>
+    </div>
+
+    <h3 class="text-lg font-bold text-gray-900 mb-3">Example Request</h3>
+    
+    <!-- Curl Example -->
+    <div class="bg-gray-900 rounded-lg overflow-hidden mb-4">
+      <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+        <span class="text-gray-400 text-sm">cURL</span>
+      </div>
+      <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>curl -H "Authorization: Bearer your-api-key" \
+  https://evald.ai/api/v1/agents</code></pre>
+    </div>
+
+    <!-- JavaScript Example -->
+    <div class="bg-gray-900 rounded-lg overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+        <span class="text-gray-400 text-sm">JavaScript (fetch)</span>
+      </div>
+      <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>const response = await fetch('https://evald.ai/api/v1/agents', {
+  headers: {
+    'Authorization': 'Bearer your-api-key'
+  }
+});
+const data = await response.json();</code></pre>
+    </div>
+  </div>
+
+  <!-- List Agents -->
+  <div id="agents" class="bg-white rounded-xl p-8 shadow mb-8 scroll-mt-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Agents</h2>
+    
+    <!-- List Agents -->
+    <div class="mb-8 pb-8 border-b border-gray-200">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm font-medium">GET</span>
+        <code class="text-gray-900 font-mono">/api/v1/agents</code>
+      </div>
+      
+      <p class="text-gray-600 mb-4">List all published agents with pagination and filtering.</p>
+      
+      <h4 class="text-sm font-bold text-gray-900 mb-2">Parameters</h4>
+      <table class="w-full text-sm mb-4">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="text-left py-2 text-gray-600">Name</th>
+            <th class="text-left py-2 text-gray-600">Type</th>
+            <th class="text-left py-2 text-gray-600">Description</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-600">
+          <tr class="border-b border-gray-100">
+            <td class="py-2 font-mono">page</td>
+            <td class="py-2">integer</td>
+            <td class="py-2">Page number (default: 1)</td>
+          </tr>
+          <tr class="border-b border-gray-100">
+            <td class="py-2 font-mono">per_page</td>
+            <td class="py-2">integer</td>
+            <td class="py-2">Items per page (max: 100)</td>
+          </tr>
+          <tr class="border-b border-gray-100">
+            <td class="py-2 font-mono">sort</td>
+            <td class="py-2">string</td>
+            <td class="py-2">Sort by: <code>stars</code>, <code>name</code>, <code>updated_at</code></td>
+          </tr>
+          <tr>
+            <td class="py-2 font-mono">language</td>
+            <td class="py-2">string</td>
+            <td class="py-2">Filter by programming language</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Curl Example -->
+      <div class="bg-gray-900 rounded-lg overflow-hidden mb-4">
+        <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+          <span class="text-gray-400 text-sm">cURL</span>
+        </div>
+        <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>curl -H "Authorization: Bearer your-api-key" \
+  "https://evald.ai/api/v1/agents?page=1&per_page=20&sort=score"</code></pre>
+      </div>
+
+      <!-- Response -->
+      <h4 class="text-sm font-bold text-gray-900 mb-2">Response</h4>
+      <div class="bg-gray-900 rounded-lg overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+          <span class="text-gray-400 text-sm">JSON</span>
+        </div>
+        <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>{
+  "agents": [...],
+  "meta": {
+    "page": 1,
+    "total": 500
+  }
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- Get Agent -->
+    <div class="mb-8 pb-8 border-b border-gray-200">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm font-medium">GET</span>
+        <code class="text-gray-900 font-mono">/api/v1/agents/:id</code>
+      </div>
+      
+      <p class="text-gray-600 mb-4">Get detailed information about a specific agent, including domain-specific scores.</p>
+
+      <!-- Curl Example -->
+      <div class="bg-gray-900 rounded-lg overflow-hidden mb-4">
+        <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+          <span class="text-gray-400 text-sm">cURL</span>
+        </div>
+        <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>curl -H "Authorization: Bearer your-api-key" \
+  https://evald.ai/api/v1/agents/devin</code></pre>
+      </div>
+
+      <!-- JavaScript Example -->
+      <div class="bg-gray-900 rounded-lg overflow-hidden mb-4">
+        <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+          <span class="text-gray-400 text-sm">JavaScript</span>
+        </div>
+        <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>const agent = await fetch('https://evald.ai/api/v1/agents/devin', {
+  headers: { 'Authorization': 'Bearer your-api-key' }
+}).then(r => r.json());
+
+console.log(`${agent.name}: ${agent.score}/100`);</code></pre>
+      </div>
+
+      <!-- Response -->
+      <h4 class="text-sm font-bold text-gray-900 mb-2">Response</h4>
+      <div class="bg-gray-900 rounded-lg overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+          <span class="text-gray-400 text-sm">JSON</span>
+        </div>
+        <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>{
+  "agent": "devin",
+  "name": "Devin",
+  "score": 84,
+  "confidence": "high",
+  "domain_scores": {
+    "coding": {
+      "score": 91,
+      "confidence": "high",
+      "evals_run": 12
+    },
+    "research": {
+      "score": 67,
+      "confidence": "low",
+      "evals_run": 2
+    }
+  },
+  "primary_domain": "coding",
+  "tier0": { ... },
+  "tier1": { ... }
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- Get Agent Score -->
+    <div class="mb-8 pb-8 border-b border-gray-200">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm font-medium">GET</span>
+        <code class="text-gray-900 font-mono">/api/v1/agents/:id/score</code>
+      </div>
+      
+      <p class="text-gray-600 mb-4">Get just the score data for an agent. Useful for lightweight integrations and CI/CD checks.</p>
+
+      <!-- Curl Example -->
+      <div class="bg-gray-900 rounded-lg overflow-hidden mb-4">
+        <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+          <span class="text-gray-400 text-sm">cURL</span>
+        </div>
+        <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>curl -H "Authorization: Bearer your-api-key" \
+  https://evald.ai/api/v1/agents/devin/score</code></pre>
+      </div>
+
+      <!-- Response -->
+      <h4 class="text-sm font-bold text-gray-900 mb-2">Response</h4>
+      <div class="bg-gray-900 rounded-lg overflow-hidden">
+        <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+          <span class="text-gray-400 text-sm">JSON</span>
+        </div>
+        <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>{
+  "agent": "devin",
+  "score": 84,
+  "confidence": "high",
+  "domain_scores": {
+    "coding": { "score": 91, "confidence": "high", "evals_run": 12 },
+    "research": { "score": 67, "confidence": "low", "evals_run": 2 }
+  },
+  "primary_domain": "coding",
+  "tier0": { ... },
+  "tier1": { ... },
+  "last_verified": "2026-02-01T00:00:00Z"
+}</code></pre>
+      </div>
+    </div>
+
+    <!-- Search Agents -->
+    <div>
+      <div class="flex items-center gap-3 mb-4">
+        <span class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm font-medium">GET</span>
+        <code class="text-gray-900 font-mono">/api/v1/agents/search</code>
+      </div>
+      
+      <p class="text-gray-600 mb-4">Search for agents by name, capability, or domain. Results are ordered by domain score when a domain filter is provided.</p>
+
+      <h4 class="text-sm font-bold text-gray-900 mb-2">Parameters</h4>
+      <table class="w-full text-sm mb-4">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="text-left py-2 text-gray-600">Name</th>
+            <th class="text-left py-2 text-gray-600">Type</th>
+            <th class="text-left py-2 text-gray-600">Description</th>
+          </tr>
+        </thead>
+        <tbody class="text-gray-600">
+          <tr class="border-b border-gray-100">
+            <td class="py-2 font-mono">q</td>
+            <td class="py-2">string</td>
+            <td class="py-2">Search query</td>
+          </tr>
+          <tr class="border-b border-gray-100">
+            <td class="py-2 font-mono">capability</td>
+            <td class="py-2">string</td>
+            <td class="py-2">Filter by category</td>
+          </tr>
+          <tr class="border-b border-gray-100">
+            <td class="py-2 font-mono">min_score</td>
+            <td class="py-2">integer</td>
+            <td class="py-2">Minimum Evald Score (0-100)</td>
+          </tr>
+          <tr class="border-b border-gray-100">
+            <td class="py-2 font-mono">domain</td>
+            <td class="py-2">string</td>
+            <td class="py-2">Filter by target domain: <code>coding</code>, <code>research</code>, <code>workflow</code></td>
+          </tr>
+          <tr>
+            <td class="py-2 font-mono">primary_domain</td>
+            <td class="py-2">string</td>
+            <td class="py-2">Filter by primary domain</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Curl Example -->
+      <div class="bg-gray-900 rounded-lg overflow-hidden mb-4">
+        <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+          <span class="text-gray-400 text-sm">cURL</span>
+        </div>
+        <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>curl -H "Authorization: Bearer your-api-key" \
+  "https://evald.ai/api/v1/agents/search?q=code&min_score=70&domain=coding"</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compare Agents -->
+  <div id="compare" class="bg-white rounded-xl p-8 shadow mb-8 scroll-mt-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Compare Agents</h2>
+
+    <div class="flex items-center gap-3 mb-4">
+      <span class="bg-green-100 text-green-700 px-3 py-1 rounded text-sm font-medium">GET</span>
+      <code class="text-gray-900 font-mono">/api/v1/agents/compare</code>
+    </div>
+    
+    <p class="text-gray-600 mb-4">
+      Compare multiple agents side-by-side. Get a recommendation based on overall or domain-specific scores.
+    </p>
+
+    <h4 class="text-sm font-bold text-gray-900 mb-2">Parameters</h4>
+    <table class="w-full text-sm mb-4">
+      <thead>
+        <tr class="border-b border-gray-200">
+          <th class="text-left py-2 text-gray-600">Name</th>
+          <th class="text-left py-2 text-gray-600">Type</th>
+          <th class="text-left py-2 text-gray-600">Description</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-600">
+        <tr class="border-b border-gray-100">
+          <td class="py-2 font-mono">agents</td>
+          <td class="py-2">string</td>
+          <td class="py-2">Comma-separated agent slugs (max 5)</td>
+        </tr>
+        <tr>
+          <td class="py-2 font-mono">task <em class="text-gray-400">or</em> domain</td>
+          <td class="py-2">string</td>
+          <td class="py-2">Filter by domain: <code>coding</code>, <code>research</code>, <code>workflow</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Curl Example -->
+    <div class="bg-gray-900 rounded-lg overflow-hidden mb-4">
+      <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+        <span class="text-gray-400 text-sm">cURL</span>
+      </div>
+      <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>curl -H "Authorization: Bearer your-api-key" \
+  "https://evald.ai/api/v1/agents/compare?agents=devin,cursor,github-copilot&task=coding"</code></pre>
+    </div>
+
+    <!-- JavaScript Example -->
+    <div class="bg-gray-900 rounded-lg overflow-hidden mb-4">
+      <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+        <span class="text-gray-400 text-sm">JavaScript</span>
+      </div>
+      <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>const agents = ['devin', 'cursor', 'github-copilot'];
+const comparison = await fetch(
+  `https://evald.ai/api/v1/agents/compare?agents=${agents.join(',')}&task=coding`,
+  { headers: { 'Authorization': 'Bearer your-api-key' }}
+).then(r => r.json());
+
+console.log(`Recommended: ${comparison.recommendation.recommended}`);
+console.log(`Reason: ${comparison.recommendation.reason}`);</code></pre>
+    </div>
+
+    <!-- Response -->
+    <h4 class="text-sm font-bold text-gray-900 mb-2">Response</h4>
+    <div class="bg-gray-900 rounded-lg overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+        <span class="text-gray-400 text-sm">JSON</span>
+      </div>
+      <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>{
+  "task": "coding",
+  "agents": [
+    { "agent": "devin", "score": 84, "domain_score": 91, ... },
+    { "agent": "cursor", "score": 78, "domain_score": 85, ... },
+    { "agent": "github-copilot", "score": 75, "domain_score": 82, ... }
+  ],
+  "recommendation": {
+    "recommended": "devin",
+    "reason": "Highest Coding domain score (91) among compared agents"
+  }
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- Rate Limits -->
+  <div id="rate-limits" class="bg-white rounded-xl p-8 shadow mb-8 scroll-mt-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Rate Limits</h2>
+    
+    <p class="text-gray-600 mb-6">
+      API requests are rate-limited to ensure fair usage. Rate limit information is returned in response headers.
+    </p>
+
+    <table class="w-full text-sm mb-6">
+      <thead>
+        <tr class="border-b border-gray-200">
+          <th class="text-left py-3 text-gray-900 font-medium">Type</th>
+          <th class="text-left py-3 text-gray-900 font-medium">Limit</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-600">
+        <tr class="border-b border-gray-100">
+          <td class="py-3">Authenticated (per API key)</td>
+          <td class="py-3"><strong>60 requests per minute</strong></td>
+        </tr>
+        <tr>
+          <td class="py-3">Unauthenticated (per IP)</td>
+          <td class="py-3"><strong>100 requests per minute</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="text-lg font-bold text-gray-900 mb-3">Rate Limit Headers</h3>
+    <div class="bg-gray-900 rounded-lg overflow-hidden">
+      <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 58
+X-RateLimit-Reset: 1707148800</code></pre>
+    </div>
+  </div>
+
+  <!-- Error Responses -->
+  <div class="bg-white rounded-xl p-8 shadow mb-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Error Responses</h2>
+    
+    <p class="text-gray-600 mb-6">
+      The API uses standard HTTP status codes. Errors return a JSON body with details.
+    </p>
+
+    <table class="w-full text-sm mb-6">
+      <thead>
+        <tr class="border-b border-gray-200">
+          <th class="text-left py-3 text-gray-900 font-medium">Status</th>
+          <th class="text-left py-3 text-gray-900 font-medium">Meaning</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-600">
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-mono">401</td>
+          <td class="py-3">Unauthorized — Invalid or missing API key</td>
+        </tr>
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-mono">404</td>
+          <td class="py-3">Not Found — Agent doesn't exist</td>
+        </tr>
+        <tr class="border-b border-gray-100">
+          <td class="py-3 font-mono">422</td>
+          <td class="py-3">Unprocessable Entity — Invalid parameters</td>
+        </tr>
+        <tr>
+          <td class="py-3 font-mono">429</td>
+          <td class="py-3">Too Many Requests — Rate limit exceeded</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 class="text-lg font-bold text-gray-900 mb-3">Error Response Format</h3>
+    <div class="bg-gray-900 rounded-lg overflow-hidden">
+      <pre class="p-4 text-green-400 text-sm overflow-x-auto"><code>{
+  "error": "not_found",
+  "message": "Agent 'unknown-agent' not found"
+}</code></pre>
+    </div>
+  </div>
+
+  <!-- Need Help -->
+  <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-6 text-center">
+    <h3 class="text-lg font-bold text-indigo-900 mb-2">Need Help?</h3>
+    <p class="text-indigo-700 mb-4">
+      Check out our <%= link_to "GitHub repository", "https://github.com/mitchellfyi/evald.ai", class: "underline" %> 
+      or open an issue if you have questions.
+    </p>
+    <a href="https://github.com/mitchellfyi/evald.ai/issues/new" class="inline-flex items-center text-indigo-600 hover:text-indigo-700 font-medium">
+      <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/></svg>
+      Open an Issue
+    </a>
+  </div>
+</div>
