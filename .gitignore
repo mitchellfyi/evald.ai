@@ -40,4 +40,4 @@
 vendor/bundle/
 coverage/
 .bundle-cache/
-mcp-server/node_modules/
+node_modules/
