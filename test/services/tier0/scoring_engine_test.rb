@@ -114,6 +114,13 @@ module Tier0
       assert score.breakdown["documentation"].key?("score")
     end
 
+    test "breakdown includes license_clarity with score" do
+      score = ScoringEngine.new(@agent).evaluate
+
+      assert score.breakdown["license_clarity"].present?
+      assert score.breakdown["license_clarity"].key?("score")
+    end
+
     private
 
     def stub_all_github_apis
@@ -200,6 +207,19 @@ module Tier0
           updated_at: 1.week.ago.iso8601,
           public_repos: 15,
           followers: 30
+        }.to_json, headers: { "Content-Type" => "application/json" })
+
+      # Stub license endpoint (for LicenseClarityAnalyzer)
+      stub_request(:get, %r{api.github.com/repos/.*/license})
+        .to_return(status: 200, body: {
+          name: "LICENSE",
+          path: "LICENSE",
+          license: {
+            key: "mit",
+            name: "MIT License",
+            spdx_id: "MIT",
+            url: "https://api.github.com/licenses/mit"
+          }
         }.to_json, headers: { "Content-Type" => "application/json" })
     end
   end
