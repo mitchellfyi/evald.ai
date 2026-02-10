@@ -1,0 +1,128 @@
+name: 'Evald Deploy Gate'
+description: 'Check agent trust score before deploying. Prevents deployment if an AI agent fails to meet the minimum trust threshold on evald.ai.'
+author: 'evald.ai'
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  agent-id:
+    description: 'Agent ID or slug (e.g., "my-agent" or multiple comma-separated "agent1,agent2")'
+    required: true
+  minimum-score:
+    description: 'Minimum trust score threshold (0-100)'
+    required: false
+    default: '70'
+  api-key:
+    description: 'Evald API key (optional, for private agents or higher rate limits)'
+    required: false
+  api-url:
+    description: 'Evald API base URL'
+    required: false
+    default: 'https://evald.ai'
+  fail-on-below:
+    description: 'Fail the workflow if score is below threshold'
+    required: false
+    default: 'true'
+
+outputs:
+  score:
+    description: 'Current agent trust score (or lowest score if multiple agents)'
+    value: ${{ steps.check.outputs.score }}
+  passed:
+    description: 'Whether all agents meet the minimum threshold (true/false)'
+    value: ${{ steps.check.outputs.passed }}
+  summary:
+    description: 'Human-readable summary of the check'
+    value: ${{ steps.check.outputs.summary }}
+  details:
+    description: 'JSON object with full API response'
+    value: ${{ steps.check.outputs.details }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check Deploy Gate
+      id: check
+      shell: bash
+      env:
+        AGENT_IDS: ${{ inputs.agent-id }}
+        MIN_SCORE: ${{ inputs.minimum-score }}
+        API_KEY: ${{ inputs.api-key }}
+        API_URL: ${{ inputs.api-url }}
+        FAIL_ON_BELOW: ${{ inputs.fail-on-below }}
+      run: |
+        set -euo pipefail
+        
+        # Convert comma-separated agent IDs to JSON array
+        IFS=',' read -ra AGENTS <<< "$AGENT_IDS"
+        AGENTS_JSON=$(printf '%s\n' "${AGENTS[@]}" | jq -R . | jq -s .)
+        
+        echo "🔍 Checking deploy gate for agents: ${AGENT_IDS}"
+        echo "📊 Minimum score threshold: ${MIN_SCORE}"
+        
+        # Build curl command
+        CURL_ARGS=(-s -w "\n%{http_code}")
+        
+        if [[ -n "${API_KEY:-}" ]]; then
+          CURL_ARGS+=(-H "Authorization: Bearer ${API_KEY}")
+        fi
+        
+        # Make API request
+        RESPONSE=$(curl "${CURL_ARGS[@]}" \
+          -X POST \
+          -H "Content-Type: application/json" \
+          -d "{\"agents\": ${AGENTS_JSON}, \"min_score\": ${MIN_SCORE}}" \
+          "${API_URL}/api/v1/deploy_gates/check")
+        
+        # Extract HTTP status code (last line)
+        HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+        BODY=$(echo "$RESPONSE" | sed '$d')
+        
+        echo "📋 Response (HTTP ${HTTP_CODE}):"
+        echo "$BODY" | jq . 2>/dev/null || echo "$BODY"
+        
+        # Parse response
+        PASSED=$(echo "$BODY" | jq -r '.pass // false')
+        SUMMARY=$(echo "$BODY" | jq -r '.summary // "Unknown"')
+        
+        # Get lowest score from all agents
+        LOWEST_SCORE=$(echo "$BODY" | jq -r '[.agents[].score // 0] | min')
+        
+        # Set outputs
+        echo "score=${LOWEST_SCORE}" >> $GITHUB_OUTPUT
+        echo "passed=${PASSED}" >> $GITHUB_OUTPUT
+        echo "summary=${SUMMARY}" >> $GITHUB_OUTPUT
+        echo "details=$(echo "$BODY" | jq -c .)" >> $GITHUB_OUTPUT
+        
+        # Create summary
+        echo "## 🛡️ Evald Deploy Gate Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ "$PASSED" == "true" ]]; then
+          echo "✅ **All agents passed** the trust score check" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Some agents failed** the trust score check" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Agent | Score | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-------|-------|--------|" >> $GITHUB_STEP_SUMMARY
+        
+        echo "$BODY" | jq -r '.agents[] | "| \(.agent) | \(.score // "N/A") | \(if .pass then "✅ Pass" else "❌ Fail" end) |"' >> $GITHUB_STEP_SUMMARY
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Threshold:** ${MIN_SCORE} | **Summary:** ${SUMMARY}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "[View on evald.ai](${API_URL})" >> $GITHUB_STEP_SUMMARY
+        
+        # Fail if required
+        if [[ "$FAIL_ON_BELOW" == "true" && "$PASSED" != "true" ]]; then
+          echo ""
+          echo "❌ Deploy gate check failed: ${SUMMARY}"
+          echo "   Set 'fail-on-below: false' to continue anyway."
+          exit 1
+        fi
+        
+        echo ""
+        echo "✅ Deploy gate check complete: ${SUMMARY}"
