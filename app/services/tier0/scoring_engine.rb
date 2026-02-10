@@ -2,12 +2,13 @@
 module Tier0
   class ScoringEngine
     WEIGHTS = {
-      repo_health: 0.20,
+      repo_health: 0.15,
       bus_factor: 0.15,
-      dependency_risk: 0.20,
+      dependency_risk: 0.15,
       documentation: 0.15,
       community_signal: 0.15,
-      license_clarity: 0.15
+      license_clarity: 0.10,
+      maintenance_pulse: 0.15
     }.freeze
 
     EXPIRY_DAYS = 30
@@ -23,7 +24,8 @@ module Tier0
         dependency_risk: DependencyRiskAnalyzer.new(@agent).analyze,
         documentation: DocumentationAnalyzer.new(@agent).analyze,
         community_signal: CommunitySignalAnalyzer.new(@agent).analyze,
-        license_clarity: LicenseClarityAnalyzer.new(@agent).analyze
+        license_clarity: LicenseClarityAnalyzer.new(@agent).analyze,
+        maintenance_pulse: MaintenancePulseAnalyzer.new(@agent).analyze
       }
 
       overall = calculate_weighted_score(breakdown)

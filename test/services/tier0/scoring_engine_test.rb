@@ -42,6 +42,8 @@ module Tier0
       assert score.breakdown.key?("bus_factor")
       assert score.breakdown.key?("dependency_risk")
       assert score.breakdown.key?("documentation")
+      assert score.breakdown.key?("license_clarity")
+      assert score.breakdown.key?("maintenance_pulse")
     end
 
     test "evaluate sets evaluated_at" do
@@ -121,6 +123,13 @@ module Tier0
       assert score.breakdown["license_clarity"].key?("score")
     end
 
+    test "breakdown includes maintenance_pulse with score" do
+      score = ScoringEngine.new(@agent).evaluate
+
+      assert score.breakdown["maintenance_pulse"].present?
+      assert score.breakdown["maintenance_pulse"].key?("score")
+    end
+
     private
 
     def stub_all_github_apis
@@ -130,7 +139,8 @@ module Tier0
         full_name: "testowner/testrepo",
         stargazers_count: 100,
         forks_count: 20,
-        open_issues_count: 5
+        open_issues_count: 5,
+        pushed_at: 3.days.ago.iso8601
       }
       stub_request(:get, %r{api.github.com/repos/[^/]+/[^/]+$})
         .to_return(status: 200, body: repo_data.to_json, headers: { "Content-Type" => "application/json" })
@@ -143,7 +153,10 @@ module Tier0
         .to_return(status: 200, body: commits.to_json, headers: { "Content-Type" => "application/json" })
 
       # Stub issues
-      issues = 10.times.map { |i| { state: i < 3 ? "open" : "closed" } }
+      issues = 10.times.map do |i|
+        created_at = (30 + i * 7).days.ago
+        { id: i + 1, state: i < 3 ? "open" : "closed", created_at: created_at.iso8601, updated_at: (created_at + 24.hours).iso8601, comments: 2 }
+      end
       stub_request(:get, %r{api.github.com/repos/.*/issues})
         .to_return(status: 200, body: issues.to_json, headers: { "Content-Type" => "application/json" })
 
@@ -221,6 +234,13 @@ module Tier0
             url: "https://api.github.com/licenses/mit"
           }
         }.to_json, headers: { "Content-Type" => "application/json" })
+
+      # Stub releases (for MaintenancePulseAnalyzer)
+      releases = 6.times.map do |i|
+        { id: i + 1, published_at: (30 * (i + 1)).days.ago.iso8601, created_at: (30 * (i + 1)).days.ago.iso8601 }
+      end
+      stub_request(:get, %r{api.github.com/repos/.*/releases})
+        .to_return(status: 200, body: releases.to_json, headers: { "Content-Type" => "application/json" })
     end
   end
 end
