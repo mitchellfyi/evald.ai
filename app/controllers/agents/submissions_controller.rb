@@ -18,7 +18,7 @@ module Agents
       duplicate_error = check_for_duplicates(@pending_agent.github_url)
       if duplicate_error
         @pending_agent.errors.add(:github_url, duplicate_error)
-        render :new, status: :unprocessable_entity
+        render :new, status: :unprocessable_content
         return
       end
 
@@ -26,14 +26,14 @@ module Agents
         @pending_agent.queue_ai_review!
         redirect_to new_agent_submissions_path, notice: "Thanks for your submission! We'll review #{@pending_agent.name} and add it to Evald if it meets our criteria."
       else
-        render :new, status: :unprocessable_entity
+        render :new, status: :unprocessable_content
       end
     end
 
     private
 
     def submission_params
-      params.require(:pending_agent).permit(:github_url, :description)
+      params.expect(pending_agent: [:github_url, :description])
     end
 
     def extract_repo_name(github_url)
