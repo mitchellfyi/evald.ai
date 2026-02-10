@@ -1,12 +1,18 @@
 version: 2
+
 updates:
   - package-ecosystem: bundler
     directory: "/"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 1
     groups:
       all-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
+      all-security:
+        applies-to: security-updates
         patterns:
           - "*"
 
@@ -14,8 +20,8 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 1
     groups:
-      all-dependencies:
+      all-actions:
         patterns:
           - "*"
