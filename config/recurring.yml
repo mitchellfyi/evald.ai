@@ -19,3 +19,7 @@ production:
   sandbox_cleanup:
     class: SandboxCleanupJob
     schedule: every hour
+  tier0_refresh:
+    class: Tier0RefreshJob
+    queue: low
+    schedule: every day at 4am
