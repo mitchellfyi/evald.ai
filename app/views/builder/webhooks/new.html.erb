@@ -1,0 +1,74 @@
+<% content_for :title, "New Webhook | #{@agent.name} | Builder Dashboard | Evald.ai" %>
+
+<div class="max-w-2xl mx-auto">
+  <div class="flex items-center space-x-3 mb-8">
+    <%= link_to "← Webhooks", builder_agent_webhooks_path(@agent), class: "text-gray-500 hover:text-gray-700" %>
+    <span class="text-gray-300">/</span>
+    <h1 class="text-2xl font-bold text-gray-900">Add Webhook</h1>
+  </div>
+
+  <div class="bg-white rounded-xl p-6 shadow">
+    <%= form_with model: @webhook, url: builder_agent_webhooks_path(@agent), class: "space-y-6" do |f| %>
+      <% if @webhook.errors.any? %>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div class="flex items-start">
+            <svg class="w-5 h-5 text-red-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="ml-3">
+              <h3 class="text-sm font-medium text-red-800">Please correct the following errors:</h3>
+              <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+                <% @webhook.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <div>
+        <%= f.label :url, "Endpoint URL", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.url_field :url, class: "w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm", placeholder: "https://your-server.com/webhooks/evald", required: true %>
+        <p class="mt-1 text-sm text-gray-500">We'll send POST requests to this URL when events occur.</p>
+      </div>
+
+      <div>
+        <span class="block text-sm font-medium text-gray-700 mb-3">Events to Subscribe</span>
+        <div class="space-y-3">
+          <% WebhookEndpoint::EVENTS.each do |event| %>
+            <label class="flex items-start space-x-3">
+              <%= check_box_tag "webhook_endpoint[events][]", event, @webhook.events.include?(event), class: "rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mt-0.5" %>
+              <div>
+                <span class="text-gray-900 font-mono text-sm"><%= event %></span>
+                <p class="text-gray-500 text-xs mt-0.5">
+                  <% case event %>
+                  <% when "score.created" %>
+                    When a new trust score is calculated for your agent
+                  <% when "score.updated" %>
+                    When your agent's trust score changes
+                  <% when "safety_score.created" %>
+                    When a new safety evaluation is completed
+                  <% when "safety_score.updated" %>
+                    When your agent's safety score changes
+                  <% end %>
+                </p>
+              </div>
+            </label>
+          <% end %>
+        </div>
+        <p class="mt-3 text-sm text-gray-500">Select at least one event to subscribe to.</p>
+      </div>
+
+      <div class="bg-gray-50 rounded-lg p-4">
+        <h3 class="text-sm font-medium text-gray-700 mb-2">Webhook Security</h3>
+        <p class="text-sm text-gray-600">A signing secret will be generated automatically. Use it to verify webhook signatures with HMAC-SHA256. The signature is sent in the <code class="bg-gray-200 px-1 rounded">X-Evald-Signature</code> header.</p>
+      </div>
+
+      <div class="flex justify-end space-x-3 pt-4 border-t">
+        <%= link_to "Cancel", builder_agent_webhooks_path(@agent), class: "px-4 py-2 text-gray-700 hover:text-gray-900" %>
+        <%= f.submit "Create Webhook", class: "px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+</div>
