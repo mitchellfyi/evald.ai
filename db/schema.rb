@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_10_030002) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_10_060000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -61,6 +61,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030002) do
     t.index ["agent_id"], name: "index_agent_scores_on_agent_id"
   end
 
+  create_table "agent_tags", force: :cascade do |t|
+    t.bigint "agent_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "tag_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["agent_id", "tag_id"], name: "index_agent_tags_on_agent_id_and_tag_id", unique: true
+    t.index ["agent_id"], name: "index_agent_tags_on_agent_id"
+    t.index ["tag_id"], name: "index_agent_tags_on_tag_id"
+  end
+
   create_table "agent_telemetry_stats", force: :cascade do |t|
     t.bigint "agent_id", null: false
     t.decimal "avg_duration_ms"
@@ -86,6 +96,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030002) do
     t.string "claim_status", default: "unclaimed"
     t.datetime "claimed_at"
     t.bigint "claimed_by_user_id"
+    t.integer "coding_evals_count", default: 0
+    t.decimal "coding_score", precision: 5, scale: 2
     t.datetime "created_at", null: false
     t.string "decay_rate", default: "standard"
     t.string "demo_url"
@@ -100,13 +112,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030002) do
     t.string "name", null: false
     t.datetime "next_eval_scheduled_at"
     t.string "owner"
+    t.string "primary_domain"
     t.boolean "published", default: true
     t.string "repo_url"
+    t.integer "research_evals_count", default: 0
+    t.decimal "research_score", precision: 5, scale: 2
     t.decimal "score", precision: 5, scale: 2
     t.decimal "score_at_eval", precision: 5, scale: 2
     t.string "slug", null: false
     t.integer "stars"
     t.string "tagline"
+    t.string "target_domains", default: [], array: true
     t.decimal "tier0_bus_factor", precision: 5, scale: 2
     t.decimal "tier0_community", precision: 5, scale: 2
     t.decimal "tier0_dependency_risk", precision: 5, scale: 2
@@ -122,6 +138,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030002) do
     t.datetime "updated_at", null: false
     t.text "use_case"
     t.string "website_url"
+    t.integer "workflow_evals_count", default: 0
+    t.decimal "workflow_score", precision: 5, scale: 2
     t.index ["category"], name: "index_agents_on_category"
     t.index ["claimed_by_user_id"], name: "index_agents_on_claimed_by_user_id"
     t.index ["featured", "stars"], name: "index_agents_on_featured_and_stars", order: { stars: :desc }
@@ -129,10 +147,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030002) do
     t.index ["github_id"], name: "index_agents_on_github_id", unique: true
     t.index ["language"], name: "index_agents_on_language"
     t.index ["name"], name: "index_agents_on_name"
+    t.index ["primary_domain"], name: "index_agents_on_primary_domain"
     t.index ["published"], name: "index_agents_on_published"
     t.index ["score"], name: "index_agents_on_score"
     t.index ["slug"], name: "index_agents_on_slug", unique: true
     t.index ["stars"], name: "index_agents_on_stars", order: :desc
+    t.index ["target_domains"], name: "index_agents_on_target_domains", using: :gin
   end
 
   create_table "api_keys", force: :cascade do |t|
@@ -241,11 +261,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030002) do
   end
 
   create_table "pending_agents", force: :cascade do |t|
+    t.jsonb "ai_capabilities", default: []
+    t.jsonb "ai_categories", default: []
+    t.string "ai_classification"
+    t.float "ai_confidence"
+    t.text "ai_description"
+    t.text "ai_reasoning"
+    t.datetime "ai_reviewed_at"
     t.integer "confidence_score"
     t.datetime "created_at", null: false
     t.text "description"
     t.datetime "discovered_at"
     t.string "github_url", null: false
+    t.boolean "is_agent"
     t.string "language"
     t.string "license"
     t.string "name", null: false
@@ -257,8 +285,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030002) do
     t.string "status", default: "pending", null: false
     t.jsonb "topics", default: []
     t.datetime "updated_at", null: false
+    t.index ["ai_classification"], name: "index_pending_agents_on_ai_classification"
     t.index ["confidence_score"], name: "index_pending_agents_on_confidence_score"
     t.index ["github_url"], name: "index_pending_agents_on_github_url", unique: true
+    t.index ["is_agent"], name: "index_pending_agents_on_is_agent"
     t.index ["reviewed_by_id"], name: "index_pending_agents_on_reviewed_by_id"
     t.index ["status"], name: "index_pending_agents_on_status"
   end
@@ -321,6 +351,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030002) do
     t.jsonb "severity_counts"
     t.datetime "updated_at", null: false
     t.index ["agent_id"], name: "index_security_scans_on_agent_id"
+  end
+
+  create_table "tags", force: :cascade do |t|
+    t.string "color", default: "#6366f1"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_tags_on_name", unique: true
+    t.index ["slug"], name: "index_tags_on_slug", unique: true
   end
 
   create_table "telemetry_events", force: :cascade do |t|
@@ -410,6 +451,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_10_030002) do
   add_foreign_key "agent_interactions", "agents", column: "reporter_agent_id"
   add_foreign_key "agent_interactions", "agents", column: "target_agent_id"
   add_foreign_key "agent_scores", "agents"
+  add_foreign_key "agent_tags", "agents"
+  add_foreign_key "agent_tags", "tags"
   add_foreign_key "agent_telemetry_stats", "agents"
   add_foreign_key "agents", "users", column: "claimed_by_user_id"
   add_foreign_key "api_keys", "users"
