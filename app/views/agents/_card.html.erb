@@ -23,12 +23,19 @@
   <% end %>
   
   <div class="flex justify-between items-center text-sm">
-    <% if agent.category.present? %>
-      <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded"><%= agent.category.capitalize %></span>
-    <% end %>
+    <div class="flex flex-wrap gap-1">
+      <% if agent.category.present? %>
+        <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded"><%= agent.category.capitalize %></span>
+      <% end %>
+      <% agent.tags.limit(3).each do |tag| %>
+        <span class="px-2 py-0.5 rounded-full text-xs text-white" style="background-color: <%= tag.color %>;">
+          <%= tag.name %>
+        </span>
+      <% end %>
+    </div>
     
     <% if agent.last_verified_at.present? %>
-      <span class="text-gray-400">Verified <%= time_ago_in_words(agent.last_verified_at) %> ago</span>
+      <span class="text-gray-400 shrink-0">Verified <%= time_ago_in_words(agent.last_verified_at) %> ago</span>
     <% end %>
   </div>
   

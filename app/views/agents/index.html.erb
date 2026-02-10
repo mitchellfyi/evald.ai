@@ -12,18 +12,37 @@
     <span class="text-sm text-gray-500">Category:</span>
     <%= link_to "All", agents_path, class: "px-3 py-1 rounded-full text-sm #{params[:category].blank? ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
     <% @categories.each do |category| %>
-      <%= link_to category.capitalize, agents_path(category: category), class: "px-3 py-1 rounded-full text-sm #{params[:category] == category ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+      <%= link_to category.capitalize, agents_path(category: category, tag: params[:tag]), class: "px-3 py-1 rounded-full text-sm #{params[:category] == category ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
     <% end %>
   </div>
   
   <div class="flex items-center space-x-2">
     <span class="text-sm text-gray-500">Min Score:</span>
     <% [0, 60, 70, 80, 90].each do |score| %>
-      <%= link_to score == 0 ? "Any" : "#{score}+", agents_path(category: params[:category], min_score: score == 0 ? nil : score), 
+      <%= link_to score == 0 ? "Any" : "#{score}+", agents_path(category: params[:category], min_score: score == 0 ? nil : score, tag: params[:tag]), 
           class: "px-3 py-1 rounded-full text-sm #{params[:min_score].to_i == score || (score == 0 && params[:min_score].blank?) ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
     <% end %>
   </div>
 </div>
+
+<% if @tags.present? %>
+<!-- Tag Filters -->
+<div class="flex flex-wrap gap-2 mb-8">
+  <span class="text-sm text-gray-500 py-1">Tags:</span>
+  <% if @current_tag %>
+    <%= link_to agents_path(category: params[:category], min_score: params[:min_score]), class: "px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-700 hover:bg-gray-200" do %>
+      Clear filter ×
+    <% end %>
+  <% end %>
+  <% @tags.each do |tag| %>
+    <%= link_to agents_path(category: params[:category], min_score: params[:min_score], tag: tag.slug), 
+        class: "px-3 py-1 rounded-full text-sm transition-colors",
+        style: params[:tag] == tag.slug ? "background-color: #{tag.color}; color: white;" : "background-color: #{tag.color}20; color: #{tag.color};" do %>
+      <%= tag.name %>
+    <% end %>
+  <% end %>
+</div>
+<% end %>
 
 <!-- Featured Agents (only on first page) -->
 <% if @featured_agents.present? && params[:category].blank? && params[:min_score].blank? && @page == 1 %>

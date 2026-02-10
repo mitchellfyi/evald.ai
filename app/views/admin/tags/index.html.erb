@@ -1,0 +1,102 @@
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+  <h1>Tags</h1>
+  <%= link_to "New Tag", new_admin_tag_path, class: "btn btn-primary" %>
+</div>
+
+<style>
+  .data-table {
+    width: 100%;
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .data-table th {
+    background: #f9fafb;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #374151;
+  }
+  
+  .data-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .tag-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: white;
+  }
+  
+  .btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .btn-primary {
+    background: #4f46e5;
+    color: white;
+  }
+  
+  .btn-danger {
+    background: #dc2626;
+    color: white;
+    border: none;
+  }
+</style>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Tag</th>
+      <th>Slug</th>
+      <th>Agents</th>
+      <th>Description</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @tags.each do |tag| %>
+      <tr>
+        <td>
+          <span class="tag-badge" style="background-color: <%= tag.color %>;">
+            <%= tag.name %>
+          </span>
+        </td>
+        <td><code><%= tag.slug %></code></td>
+        <td><%= tag.agents.count %></td>
+        <td><%= truncate(tag.description, length: 50) %></td>
+        <td>
+          <%= link_to "View", admin_tag_path(tag), class: "btn btn-sm btn-primary" %>
+          <%= link_to "Edit", edit_admin_tag_path(tag), class: "btn btn-sm btn-primary" %>
+          <%= button_to "Delete", admin_tag_path(tag), method: :delete, class: "btn btn-sm btn-danger", data: { confirm: "Are you sure?" } %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<% if @tags.empty? %>
+  <p style="text-align: center; padding: 2rem; color: #6b7280;">No tags yet. <%= link_to "Create one", new_admin_tag_path %>.</p>
+<% end %>

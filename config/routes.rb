@@ -90,6 +90,7 @@ Rails.application.routes.draw do
   namespace :admin do
     root to: "dashboard#index"
     resources :users, only: [:index, :show, :edit, :update, :destroy]
+    resources :tags
     resources :agents, only: [:index, :show, :edit, :update, :destroy] do
       member do
         post :run_tier0

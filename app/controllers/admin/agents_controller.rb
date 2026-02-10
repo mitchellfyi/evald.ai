@@ -49,7 +49,7 @@ module Admin
     end
 
     def agent_params
-      params.expect(agent: [:name, :slug, :description, :repo_url, :category])
+      params.expect(agent: [:name, :slug, :description, :repo_url, :category, tag_ids: []])
     end
   end
 end

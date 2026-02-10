@@ -41,6 +41,36 @@
     margin-right: 0.5rem;
   }
   
+  .tag-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .tag-checkbox {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    border: 2px solid #e5e7eb;
+    transition: all 0.15s;
+  }
+  
+  .tag-checkbox:has(input:checked) {
+    border-color: currentColor;
+    background: currentColor;
+  }
+  
+  .tag-checkbox:has(input:checked) span {
+    color: white;
+  }
+  
+  .tag-checkbox input {
+    display: none;
+  }
+  
   .btn {
     display: inline-block;
     padding: 0.75rem 1.5rem;
@@ -88,6 +118,22 @@
     <div class="form-group">
       <%= f.label :description %>
       <%= f.text_area :description %>
+    </div>
+    
+    <div class="form-group">
+      <%= f.label :tags %>
+      <div class="tag-checkboxes">
+        <% Tag.alphabetical.each do |tag| %>
+          <label class="tag-checkbox" style="color: <%= tag.color %>;">
+            <%= check_box_tag "agent[tag_ids][]", tag.id, @agent.tags.include?(tag) %>
+            <span><%= tag.name %></span>
+          </label>
+        <% end %>
+        <% if Tag.none? %>
+          <span style="color: #6b7280;">No tags yet. <%= link_to "Create some", admin_tags_path %>.</span>
+        <% end %>
+      </div>
+      <%= hidden_field_tag "agent[tag_ids][]", "" %>
     </div>
     
     <div style="display: flex; gap: 0.5rem;">

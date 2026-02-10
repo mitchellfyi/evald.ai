@@ -3,9 +3,10 @@ module Api
   module V1
     class AgentsController < BaseController
       def index
-        agents = Agent.published.order(score: :desc)
+        agents = Agent.published.includes(:tags).order(score: :desc)
 
         agents = agents.by_category(params[:capability]) if params[:capability].present?
+        agents = agents.by_tag(params[:tag]) if params[:tag].present?
         agents = agents.high_score(params[:min_score].to_i) if params[:min_score].present?
 
         agents = agents.limit(params[:limit] || 50)
@@ -14,7 +15,7 @@ module Api
       end
 
       def show
-        agent = Agent.published.find_by!(slug: params[:id])
+        agent = Agent.published.includes(:tags).find_by!(slug: params[:id])
         render json: agent_detail(agent)
       end
 
@@ -38,9 +39,10 @@ module Api
       end
 
       def search
-        agents = Agent.published
+        agents = Agent.published.includes(:tags)
 
         agents = agents.by_category(params[:capability]) if params[:capability].present?
+        agents = agents.by_tag(params[:tag]) if params[:tag].present?
         agents = agents.high_score(params[:min_score].to_i) if params[:min_score].present?
         agents = agents.by_domain(params[:domain]) if params[:domain].present?
         agents = agents.by_primary_domain(params[:primary_domain]) if params[:primary_domain].present?
@@ -78,6 +80,7 @@ module Api
           agent: agent.slug,
           name: agent.name,
           category: agent.category,
+          tags: agent.tags.map { |t| { slug: t.slug, name: t.name } },
           score: agent.decayed_score&.to_f,
           tier: agent.tier,
           confidence: agent.confidence_level,
@@ -91,6 +94,7 @@ module Api
           name: agent.name,
           description: agent.description,
           category: agent.category,
+          tags: agent.tags.map { |t| { slug: t.slug, name: t.name, color: t.color } },
           builder: {
             name: agent.builder_name,
             url: agent.builder_url

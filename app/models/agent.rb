@@ -14,6 +14,8 @@ class Agent < ApplicationRecord
   has_many :webhook_endpoints, dependent: :destroy
   has_many :reported_interactions, class_name: "AgentInteraction", foreign_key: :reporter_agent_id, dependent: :destroy, inverse_of: :reporter_agent
   has_many :received_interactions, class_name: "AgentInteraction", foreign_key: :target_agent_id, dependent: :destroy, inverse_of: :target_agent
+  has_many :agent_tags, dependent: :destroy
+  has_many :tags, through: :agent_tags
   belongs_to :claimed_by_user, class_name: "User", optional: true
 
   validates :name, presence: true
@@ -28,6 +30,7 @@ class Agent < ApplicationRecord
   scope :recently_verified, -> { where("last_verified_at > ?", 30.days.ago) }
   scope :by_domain, ->(domain) { where("? = ANY(target_domains)", domain) }
   scope :by_primary_domain, ->(domain) { where(primary_domain: domain) }
+  scope :by_tag, ->(tag_slug) { joins(:tags).where(tags: { slug: tag_slug }) }
 
   CATEGORIES = %w[ coding research workflow assistant general ].freeze
   CLAIM_STATUSES = %w[ unclaimed claimed verified ].freeze
