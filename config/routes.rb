@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   resources :agents, only: [:index, :show], path: "agents" do
     member do
       get :badge, to: "badges#show", defaults: { format: :svg }
+      get :score_history
     end
 
     # Agent profiles and claiming

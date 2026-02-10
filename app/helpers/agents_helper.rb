@@ -76,4 +76,32 @@ module AgentsHelper
     else "Unrated"
     end
   end
+
+  # Calculate and return trend indicator data for an agent's score
+  def score_trend_indicator(agent)
+    scores = agent.evaluations
+      .completed
+      .where.not(score: nil)
+      .order(completed_at: :desc)
+      .limit(10)
+      .pluck(:score)
+      .map(&:to_f)
+
+    return { show: false } if scores.size < 2
+
+    recent = scores.first(3)
+    older = scores.last([scores.size / 2, 1].max)
+
+    recent_avg = recent.sum / recent.size
+    older_avg = older.sum / older.size
+    diff = recent_avg - older_avg
+
+    if diff > 3
+      { show: true, icon: "↑", class: "text-green-500", label: "Improving" }
+    elsif diff < -3
+      { show: true, icon: "↓", class: "text-red-500", label: "Declining" }
+    else
+      { show: true, icon: "→", class: "text-gray-400", label: "Stable" }
+    end
+  end
 end

@@ -32,4 +32,56 @@ class AgentsController < ApplicationController
     slugs = params[:agents].to_s.split(",").map(&:strip).first(5)
     @agents = Agent.published.where(slug: slugs)
   end
+
+  def score_history
+    @agent = Agent.published.find_by!(slug: params[:id])
+
+    # Get completed evaluations with scores, ordered by date
+    evaluations = @agent.evaluations
+      .completed
+      .where.not(score: nil)
+      .where.not(completed_at: nil)
+      .order(completed_at: :asc)
+      .select(:completed_at, :score, :tier)
+      .limit(50)
+
+    data = evaluations.map do |eval|
+      {
+        date: eval.completed_at.strftime("%Y-%m-%d"),
+        score: eval.score.to_f.round(1),
+        tier: eval.tier
+      }
+    end
+
+    # Calculate trend
+    trend = calculate_trend(evaluations.map(&:score).compact.map(&:to_f))
+
+    render json: {
+      data: data,
+      trend: trend,
+      current_score: @agent.decayed_score&.round(1)
+    }
+  end
+
+  private
+
+  def calculate_trend(scores)
+    return "stable" if scores.size < 2
+
+    recent = scores.last(5)
+    older = scores.first([scores.size / 2, 1].max)
+
+    recent_avg = recent.sum / recent.size
+    older_avg = older.sum / older.size
+
+    diff = recent_avg - older_avg
+
+    if diff > 3
+      "improving"
+    elsif diff < -3
+      "declining"
+    else
+      "stable"
+    end
+  end
 end
