@@ -79,7 +79,7 @@ class AiAgentReviewer
   end
 
   def openai_model
-    Rails.application.credentials.dig(:openai, :model) || "gpt-4o"
+    Rails.application.credentials.dig(:openai, :model) || "gpt-5-nano"
   end
 
   def build_messages(readme, repo_info)
