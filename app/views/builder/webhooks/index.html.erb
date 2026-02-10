@@ -1,0 +1,112 @@
+<% content_for :title, "Webhooks | #{@agent.name} | Builder Dashboard | Evald.ai" %>
+
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center space-x-3 mb-8">
+    <%= link_to "← Dashboard", builder_root_path, class: "text-gray-500 hover:text-gray-700" %>
+    <span class="text-gray-300">/</span>
+    <%= link_to @agent.name, edit_builder_agent_path(@agent), class: "text-gray-500 hover:text-gray-700" %>
+    <span class="text-gray-300">/</span>
+    <h1 class="text-2xl font-bold text-gray-900">Webhooks</h1>
+  </div>
+
+  <!-- Info Card -->
+  <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8">
+    <div class="flex items-start space-x-3">
+      <svg class="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <div>
+        <h3 class="font-medium text-blue-800">About Webhooks</h3>
+        <p class="text-blue-700 text-sm mt-1">Webhooks notify your server when events occur for your agent. We'll send a POST request with event data signed using HMAC-SHA256.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Webhook Button -->
+  <div class="flex justify-end mb-6">
+    <%= link_to new_builder_agent_webhook_path(@agent), class: "inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium" do %>
+      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Add Webhook
+    <% end %>
+  </div>
+
+  <% if @webhooks.any? %>
+    <div class="space-y-4">
+      <% @webhooks.each do |webhook| %>
+        <div class="bg-white rounded-xl p-6 shadow">
+          <div class="flex items-start justify-between">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center space-x-3">
+                <% if webhook.enabled? %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    Active
+                  </span>
+                <% else %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    Disabled
+                  </span>
+                <% end %>
+                <% if webhook.failure_count > 0 %>
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <%= webhook.failure_count %> failures
+                  </span>
+                <% end %>
+              </div>
+              <p class="mt-2 text-gray-900 font-mono text-sm truncate"><%= webhook.url %></p>
+              <div class="mt-2 flex flex-wrap gap-1">
+                <% webhook.events.each do |event| %>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                    <%= event %>
+                  </span>
+                <% end %>
+              </div>
+              <% if webhook.last_triggered_at %>
+                <p class="mt-2 text-gray-500 text-xs">Last triggered: <%= time_ago_in_words(webhook.last_triggered_at) %> ago</p>
+              <% else %>
+                <p class="mt-2 text-gray-500 text-xs">Never triggered</p>
+              <% end %>
+            </div>
+            <div class="flex items-center space-x-2 ml-4">
+              <%= link_to builder_agent_webhook_path(@agent, webhook), class: "p-2 text-gray-400 hover:text-gray-600" do %>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+              <% end %>
+              <%= button_to toggle_builder_agent_webhook_path(@agent, webhook), method: :post, class: "p-2 text-gray-400 hover:text-gray-600", title: webhook.enabled? ? "Disable" : "Enable" do %>
+                <% if webhook.enabled? %>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                <% else %>
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                <% end %>
+              <% end %>
+              <%= button_to builder_agent_webhook_path(@agent, webhook), method: :delete, class: "p-2 text-gray-400 hover:text-red-600", data: { turbo_confirm: "Delete this webhook?" } do %>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-xl p-12 shadow text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+      </svg>
+      <h3 class="mt-4 text-lg font-medium text-gray-900">No webhooks configured</h3>
+      <p class="mt-2 text-gray-500">Get started by adding a webhook endpoint.</p>
+      <div class="mt-6">
+        <%= link_to "Add Webhook", new_builder_agent_webhook_path(@agent), class: "inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium" %>
+      </div>
+    </div>
+  <% end %>
+</div>

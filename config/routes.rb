@@ -42,6 +42,12 @@ Rails.application.routes.draw do
     root to: "dashboard#index"
     resources :agents, only: [:edit, :update] do
       resource :notification_preferences, only: [:edit, :update]
+      resources :webhooks, only: [:index, :new, :create, :show, :destroy] do
+        member do
+          post :toggle
+          post :regenerate_secret
+        end
+      end
     end
   end
 

@@ -77,6 +77,22 @@
     <% end %>
   </div>
 
+  <!-- Webhooks -->
+  <div class="bg-white rounded-xl p-6 shadow mb-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-gray-900">Webhooks</h2>
+        <p class="text-gray-500 text-sm mt-1">Get notified when your agent's scores change.</p>
+      </div>
+      <%= link_to builder_agent_webhooks_path(@agent), class: "inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm" do %>
+        Manage Webhooks
+        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      <% end %>
+    </div>
+  </div>
+
   <!-- Badge Embed Code -->
   <div class="bg-white rounded-xl p-6 shadow mb-8">
     <h2 class="text-lg font-bold text-gray-900 mb-4">Badge Embed Code</h2>
