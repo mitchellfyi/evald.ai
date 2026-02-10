@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Collect failure logs
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7
         id: logs
         with:
           script: |
@@ -66,7 +66,7 @@ jobs:
             core.exportVariable('FAILURE_LOGS', allLogs);
 
       - name: Check for existing open issue
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7
         id: existing
         with:
           script: |
@@ -87,7 +87,7 @@ jobs:
 
       - name: Count workflow comments on existing issue
         if: steps.existing.outputs.found == 'true'
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7
         id: comment_count
         with:
           script: |
@@ -107,7 +107,7 @@ jobs:
         if: >
           steps.existing.outputs.found == 'true' &&
           fromJSON(steps.comment_count.outputs.count) >= 3
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7
         with:
           script: |
             const issueNumber = parseInt('${{ steps.existing.outputs.issue_number }}', 10);
@@ -128,7 +128,7 @@ jobs:
         if: >
           steps.existing.outputs.found == 'true' &&
           fromJSON(steps.comment_count.outputs.count) < 3
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7
         with:
           script: |
             const issueNumber = parseInt('${{ steps.existing.outputs.issue_number }}', 10);
@@ -160,7 +160,7 @@ jobs:
 
       - name: Ensure labels exist
         if: steps.existing.outputs.found == 'false'
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7
         with:
           script: |
             const labels = [
@@ -189,7 +189,7 @@ jobs:
 
       - name: Create new issue for Copilot
         if: steps.existing.outputs.found == 'false'
-        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v7
         with:
           script: |
             const sha = context.payload.workflow_run.head_sha;
