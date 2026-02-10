@@ -48,7 +48,7 @@ module Admin
     end
 
     def tag_params
-      params.require(:tag).permit(:name, :slug, :color, :description)
+      params.expect(tag: [:name, :slug, :color, :description])
     end
   end
 end
