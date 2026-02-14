@@ -1,0 +1,114 @@
+<% content_for :title, "AI Models Directory - Pricing & Specs | Evald.ai" %>
+<% content_for :description, "Compare AI model pricing, capabilities, and specs. Comprehensive directory of models from OpenAI, Anthropic, Google, Meta, Mistral, and more." %>
+
+<div class="mb-8">
+  <h1 class="text-3xl font-bold text-gray-900 mb-4">AI Models Directory</h1>
+  <p class="text-gray-600">Compare pricing, capabilities, and specs across AI models. Updated regularly with the latest information.</p>
+</div>
+
+<!-- Provider Filters -->
+<div class="flex flex-wrap gap-4 mb-8">
+  <div class="flex items-center space-x-2">
+    <span class="text-sm text-gray-500">Provider:</span>
+    <%= link_to "All", models_path, class: "px-3 py-1 rounded-full text-sm #{params[:provider].blank? ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+    <% @providers.each do |provider| %>
+      <%= link_to provider, models_path(provider: provider), class: "px-3 py-1 rounded-full text-sm #{params[:provider] == provider ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}" %>
+    <% end %>
+  </div>
+</div>
+
+<!-- Models List -->
+<div>
+  <h2 class="text-xl font-bold text-gray-900 mb-4">
+    <%= params[:provider].present? ? "#{params[:provider]} Models" : "All Models" %>
+    <span class="text-gray-400 font-normal">(<%= @total_count %>)</span>
+  </h2>
+
+  <% if @models.empty? %>
+    <div class="text-center py-12 bg-white rounded-xl">
+      <p class="text-gray-500">No models found matching your criteria.</p>
+      <%= link_to "Clear filters", models_path, class: "text-indigo-600 hover:text-indigo-700" %>
+    </div>
+  <% else %>
+    <!-- Table View -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Model</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Input $/1M</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Output $/1M</th>
+              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Context</th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Vision</th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tools</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <% @models.each do |model| %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    <%= link_to model.name, model_path(model), class: "text-sm font-medium text-indigo-600 hover:text-indigo-700" %>
+                    <% if model.family.present? %>
+                      <p class="text-xs text-gray-400"><%= model.family %></p>
+                    <% end %>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= model.provider %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                  <%= model.input_per_1m_tokens ? "$#{model.input_per_1m_tokens}" : "—" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
+                  <%= model.output_per_1m_tokens ? "$#{model.output_per_1m_tokens}" : "—" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                  <%= model.formatted_context_window || "—" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                  <%= model.supports_vision ? "✅" : "—" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                  <%= model.supports_function_calling ? "✅" : "—" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <% if @total_pages > 1 %>
+      <div class="mt-8 flex justify-center">
+        <nav class="flex items-center space-x-1" aria-label="Pagination">
+          <% if @page > 1 %>
+            <%= link_to models_path(page: @page - 1, provider: params[:provider]),
+                class: "px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" do %>
+              ← Previous
+            <% end %>
+          <% end %>
+
+          <span class="px-4 py-2 text-sm text-gray-700">
+            Page <%= @page %> of <%= @total_pages %>
+          </span>
+
+          <% if @page < @total_pages %>
+            <%= link_to models_path(page: @page + 1, provider: params[:provider]),
+                class: "px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" do %>
+              Next →
+            <% end %>
+          <% end %>
+        </nav>
+      </div>
+    <% end %>
+  <% end %>
+</div>
+
+<!-- Compare CTA -->
+<div class="mt-12 bg-white rounded-xl shadow-sm p-6 text-center">
+  <h3 class="text-lg font-semibold text-gray-900 mb-2">Compare Models Side-by-Side</h3>
+  <p class="text-gray-500 mb-4">Select up to 4 models to compare pricing, capabilities, and specs.</p>
+  <%= link_to "Go to Comparison Tool →", compare_models_path, class: "inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700" %>
+</div>

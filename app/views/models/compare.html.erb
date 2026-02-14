@@ -1,0 +1,117 @@
+<% content_for :title, "Compare AI Models - Side by Side | Evald.ai" %>
+<% content_for :description, "Compare AI model pricing, capabilities, and specs side by side. Select up to 4 models to compare." %>
+
+<div class="mb-8">
+  <%= link_to "← Back to Models", models_path, class: "text-indigo-600 hover:text-indigo-700 text-sm" %>
+</div>
+
+<div class="mb-8">
+  <h1 class="text-3xl font-bold text-gray-900 mb-4">Compare AI Models</h1>
+  <p class="text-gray-600">Select models from the <a href="<%= models_path %>" class="text-indigo-600 hover:text-indigo-700">directory</a> and add their slugs to the URL to compare. Example: <code class="text-xs bg-gray-100 px-1 py-0.5 rounded">/models/compare?models=gpt-4o,claude-3-5-sonnet</code></p>
+</div>
+
+<% if @models.any? %>
+  <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Feature</th>
+            <% @models.each do |model| %>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <%= link_to model.name, model_path(model), class: "text-indigo-600 hover:text-indigo-700" %>
+                <br><span class="font-normal normal-case"><%= model.provider %></span>
+              </th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <!-- Pricing -->
+          <tr class="bg-gray-50">
+            <td colspan="<%= @models.size + 1 %>" class="px-6 py-2 text-xs font-semibold text-gray-700 uppercase">Pricing</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-3 text-sm text-gray-500">Input $/1M tokens</td>
+            <% @models.each do |model| %>
+              <td class="px-6 py-3 text-sm text-gray-900 text-center font-medium">
+                <%= model.input_per_1m_tokens ? "$#{model.input_per_1m_tokens}" : "—" %>
+              </td>
+            <% end %>
+          </tr>
+          <tr>
+            <td class="px-6 py-3 text-sm text-gray-500">Output $/1M tokens</td>
+            <% @models.each do |model| %>
+              <td class="px-6 py-3 text-sm text-gray-900 text-center font-medium">
+                <%= model.output_per_1m_tokens ? "$#{model.output_per_1m_tokens}" : "—" %>
+              </td>
+            <% end %>
+          </tr>
+
+          <!-- Specs -->
+          <tr class="bg-gray-50">
+            <td colspan="<%= @models.size + 1 %>" class="px-6 py-2 text-xs font-semibold text-gray-700 uppercase">Specifications</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-3 text-sm text-gray-500">Context Window</td>
+            <% @models.each do |model| %>
+              <td class="px-6 py-3 text-sm text-gray-900 text-center"><%= model.formatted_context_window || "—" %></td>
+            <% end %>
+          </tr>
+          <tr>
+            <td class="px-6 py-3 text-sm text-gray-500">Max Output</td>
+            <% @models.each do |model| %>
+              <td class="px-6 py-3 text-sm text-gray-900 text-center"><%= model.formatted_max_output || "—" %></td>
+            <% end %>
+          </tr>
+
+          <!-- Capabilities -->
+          <tr class="bg-gray-50">
+            <td colspan="<%= @models.size + 1 %>" class="px-6 py-2 text-xs font-semibold text-gray-700 uppercase">Capabilities</td>
+          </tr>
+          <tr>
+            <td class="px-6 py-3 text-sm text-gray-500">Vision</td>
+            <% @models.each do |model| %>
+              <td class="px-6 py-3 text-sm text-center"><%= model.supports_vision ? "✅" : "❌" %></td>
+            <% end %>
+          </tr>
+          <tr>
+            <td class="px-6 py-3 text-sm text-gray-500">Function Calling</td>
+            <% @models.each do |model| %>
+              <td class="px-6 py-3 text-sm text-center"><%= model.supports_function_calling ? "✅" : "❌" %></td>
+            <% end %>
+          </tr>
+          <tr>
+            <td class="px-6 py-3 text-sm text-gray-500">JSON Mode</td>
+            <% @models.each do |model| %>
+              <td class="px-6 py-3 text-sm text-center"><%= model.supports_json_mode ? "✅" : "❌" %></td>
+            <% end %>
+          </tr>
+          <tr>
+            <td class="px-6 py-3 text-sm text-gray-500">Streaming</td>
+            <% @models.each do |model| %>
+              <td class="px-6 py-3 text-sm text-center"><%= model.supports_streaming ? "✅" : "❌" %></td>
+            <% end %>
+          </tr>
+          <tr>
+            <td class="px-6 py-3 text-sm text-gray-500">Fine-tuning</td>
+            <% @models.each do |model| %>
+              <td class="px-6 py-3 text-sm text-center"><%= model.supports_fine_tuning ? "✅" : "❌" %></td>
+            <% end %>
+          </tr>
+          <tr>
+            <td class="px-6 py-3 text-sm text-gray-500">Embedding</td>
+            <% @models.each do |model| %>
+              <td class="px-6 py-3 text-sm text-center"><%= model.supports_embedding ? "✅" : "❌" %></td>
+            <% end %>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% else %>
+  <div class="text-center py-12 bg-white rounded-xl">
+    <p class="text-gray-500 mb-4">No models selected for comparison.</p>
+    <p class="text-sm text-gray-400 mb-4">Add model slugs to the URL: <code class="bg-gray-100 px-1 py-0.5 rounded">/models/compare?models=gpt-4o,claude-3-5-sonnet</code></p>
+    <%= link_to "Browse Models", models_path, class: "inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700" %>
+  </div>
+<% end %>

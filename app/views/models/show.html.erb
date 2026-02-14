@@ -1,0 +1,230 @@
+<% content_for :title, "#{@model.name} - Pricing & Specs | Evald.ai" %>
+<% content_for :description, "#{@model.name} by #{@model.provider}: #{@model.pricing_summary}. Context window: #{@model.formatted_context_window}. Complete specs, capabilities, and quick-start guide." %>
+
+<div class="mb-8">
+  <%= link_to "← Back to Models", models_path, class: "text-indigo-600 hover:text-indigo-700 text-sm" %>
+</div>
+
+<!-- Header -->
+<div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+  <div class="flex flex-col md:flex-row md:items-start md:justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900"><%= @model.name %></h1>
+      <p class="text-gray-500 mt-1">
+        by <%= @model.provider %>
+        <% if @model.family.present? %>
+          · <%= @model.family %> family
+        <% end %>
+        <% if @model.release_date.present? %>
+          · Released <%= @model.release_date.strftime("%B %Y") %>
+        <% end %>
+      </p>
+      <% if @model.api_model_id.present? %>
+        <p class="text-xs text-gray-400 mt-1 font-mono"><%= @model.api_model_id %></p>
+      <% end %>
+    </div>
+    <div class="mt-4 md:mt-0 flex space-x-3">
+      <% if @model.docs_url.present? %>
+        <%= link_to "Documentation", @model.docs_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200" %>
+      <% end %>
+      <% if @model.website_url.present? %>
+        <%= link_to "Website", @model.website_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700" %>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="grid md:grid-cols-3 gap-6 mb-6">
+  <!-- Pricing -->
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">💰 Pricing</h2>
+    <dl class="space-y-3">
+      <div class="flex justify-between">
+        <dt class="text-sm text-gray-500">Input (per 1M tokens)</dt>
+        <dd class="text-sm font-medium text-gray-900"><%= @model.input_per_1m_tokens ? "$#{@model.input_per_1m_tokens}" : "—" %></dd>
+      </div>
+      <div class="flex justify-between">
+        <dt class="text-sm text-gray-500">Output (per 1M tokens)</dt>
+        <dd class="text-sm font-medium text-gray-900"><%= @model.output_per_1m_tokens ? "$#{@model.output_per_1m_tokens}" : "—" %></dd>
+      </div>
+      <% if @model.cached_input_per_1m_tokens.present? %>
+        <div class="flex justify-between">
+          <dt class="text-sm text-gray-500">Cached Input (per 1M)</dt>
+          <dd class="text-sm font-medium text-gray-900">$<%= @model.cached_input_per_1m_tokens %></dd>
+        </div>
+      <% end %>
+      <% if @model.batch_discount_percentage.present? %>
+        <div class="flex justify-between">
+          <dt class="text-sm text-gray-500">Batch Discount</dt>
+          <dd class="text-sm font-medium text-green-600"><%= @model.batch_discount_percentage %>%</dd>
+        </div>
+      <% end %>
+      <% if @model.free_tier_description.present? %>
+        <div class="flex justify-between">
+          <dt class="text-sm text-gray-500">Free Tier</dt>
+          <dd class="text-sm font-medium text-green-600"><%= @model.free_tier_description %></dd>
+        </div>
+      <% end %>
+    </dl>
+  </div>
+
+  <!-- Specs -->
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">📊 Specs</h2>
+    <dl class="space-y-3">
+      <div class="flex justify-between">
+        <dt class="text-sm text-gray-500">Context Window</dt>
+        <dd class="text-sm font-medium text-gray-900"><%= @model.formatted_context_window || "—" %></dd>
+      </div>
+      <div class="flex justify-between">
+        <dt class="text-sm text-gray-500">Max Output</dt>
+        <dd class="text-sm font-medium text-gray-900"><%= @model.formatted_max_output || "—" %></dd>
+      </div>
+    </dl>
+  </div>
+
+  <!-- Capabilities -->
+  <div class="bg-white rounded-xl shadow-sm p-6">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">⚡ Capabilities</h2>
+    <div class="space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-500">Vision</span>
+        <span class="text-sm"><%= @model.supports_vision ? "✅" : "❌" %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-500">Function Calling</span>
+        <span class="text-sm"><%= @model.supports_function_calling ? "✅" : "❌" %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-500">JSON Mode</span>
+        <span class="text-sm"><%= @model.supports_json_mode ? "✅" : "❌" %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-500">Streaming</span>
+        <span class="text-sm"><%= @model.supports_streaming ? "✅" : "❌" %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-500">Fine-tuning</span>
+        <span class="text-sm"><%= @model.supports_fine_tuning ? "✅" : "❌" %></span>
+      </div>
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-gray-500">Embedding</span>
+        <span class="text-sm"><%= @model.supports_embedding ? "✅" : "❌" %></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Key Features & Best For -->
+<% if @model.key_features.present? || @model.best_for.present? || @model.limitations.present? %>
+<div class="grid md:grid-cols-3 gap-6 mb-6">
+  <% if @model.key_features.present? %>
+    <div class="bg-white rounded-xl shadow-sm p-6">
+      <h2 class="text-lg font-semibold text-gray-900 mb-3">🌟 Key Features</h2>
+      <ul class="space-y-2">
+        <% @model.key_features.each do |feature| %>
+          <li class="text-sm text-gray-700 flex items-start">
+            <span class="text-indigo-500 mr-2">•</span>
+            <%= feature %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if @model.best_for.present? %>
+    <div class="bg-white rounded-xl shadow-sm p-6">
+      <h2 class="text-lg font-semibold text-gray-900 mb-3">✅ Best For</h2>
+      <ul class="space-y-2">
+        <% @model.best_for.each do |use_case| %>
+          <li class="text-sm text-gray-700 flex items-start">
+            <span class="text-green-500 mr-2">✓</span>
+            <%= use_case %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <% if @model.limitations.present? %>
+    <div class="bg-white rounded-xl shadow-sm p-6">
+      <h2 class="text-lg font-semibold text-gray-900 mb-3">⚠️ Limitations</h2>
+      <ul class="space-y-2">
+        <% @model.limitations.each do |limitation| %>
+          <li class="text-sm text-gray-700 flex items-start">
+            <span class="text-amber-500 mr-2">!</span>
+            <%= limitation %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+</div>
+<% end %>
+
+<!-- Benchmarks -->
+<% if @model.benchmarks.present? && @model.benchmarks.any? %>
+<div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+  <h2 class="text-lg font-semibold text-gray-900 mb-4">📈 Benchmarks</h2>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <% @model.benchmarks.each do |benchmark, score| %>
+      <div class="text-center p-3 bg-gray-50 rounded-lg">
+        <p class="text-xs text-gray-500 uppercase"><%= benchmark.to_s.gsub("_", " ") %></p>
+        <p class="text-2xl font-bold text-indigo-600"><%= score %></p>
+      </div>
+    <% end %>
+  </div>
+</div>
+<% end %>
+
+<!-- Cliff Notes -->
+<% if @model.cliff_notes.present? %>
+<div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+  <h2 class="text-lg font-semibold text-gray-900 mb-4">📝 Quick Start Guide</h2>
+  <div class="prose prose-sm max-w-none text-gray-700">
+    <%= simple_format(@model.cliff_notes) %>
+  </div>
+</div>
+<% end %>
+
+<!-- Links -->
+<div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+  <h2 class="text-lg font-semibold text-gray-900 mb-4">🔗 Resources</h2>
+  <div class="flex flex-wrap gap-3">
+    <% if @model.website_url.present? %>
+      <%= link_to @model.website_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200" do %>
+        🌐 Website
+      <% end %>
+    <% end %>
+    <% if @model.docs_url.present? %>
+      <%= link_to @model.docs_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200" do %>
+        📖 Documentation
+      <% end %>
+    <% end %>
+    <% if @model.api_reference_url.present? %>
+      <%= link_to @model.api_reference_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200" do %>
+        🔧 API Reference
+      <% end %>
+    <% end %>
+    <% if @model.github_url.present? %>
+      <%= link_to @model.github_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200" do %>
+        🐙 GitHub
+      <% end %>
+    <% end %>
+    <% if @model.changelog_url.present? %>
+      <%= link_to @model.changelog_url, target: "_blank", rel: "noopener noreferrer", class: "inline-flex items-center px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-lg hover:bg-gray-200" do %>
+        📋 Changelog
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<!-- Meta -->
+<div class="text-sm text-gray-400 text-center">
+  <% if @model.last_updated_at.present? %>
+    Last updated: <%= @model.last_updated_at.strftime("%B %d, %Y") %>
+  <% end %>
+  <% if @model.status == "deprecated" %>
+    <span class="ml-2 px-2 py-0.5 bg-red-100 text-red-600 rounded-full text-xs">Deprecated</span>
+  <% end %>
+</div>
