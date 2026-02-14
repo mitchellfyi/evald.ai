@@ -57,7 +57,10 @@ class AgentRouter
       domain_agents = agents.where("target_domains && ARRAY[?]::varchar[]", mapping[:domains])
       # Also include agents with domain scores > 0
       domain_score_agents = mapping[:domains].reduce(agents.none) do |scope, domain|
-        scope.or(agents.where("#{domain}_score > ?", 0))
+        column = Agent::DOMAIN_SCORE_COLUMNS[domain]
+        next scope unless column
+
+        scope.or(agents.where("#{column} > ?", 0))
       end
 
       # Combine: category match OR domain match
@@ -112,7 +115,9 @@ class AgentRouter
 
       # Domain score match
       mapping[:domains].each do |domain|
-        domain_score = agent.send("#{domain}_score") rescue nil
+        next unless Agent::DOMAINS.include?(domain)
+
+        domain_score = agent.send("#{domain}_score")
         if domain_score.present? && domain_score > 0
           score += 0.1
           break
@@ -136,7 +141,9 @@ class AgentRouter
     domain_score = nil
 
     mapping[:domains]&.each do |domain|
-      ds = agent.send("#{domain}_score") rescue nil
+      next unless Agent::DOMAINS.include?(domain)
+
+      ds = agent.send("#{domain}_score")
       if ds.present? && ds > 0
         domain_score = ds.to_f / 100.0
         break
