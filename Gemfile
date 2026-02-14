@@ -51,7 +51,7 @@ gem "image_processing", "~> 1.2"
 # Authentication
 gem "devise", "~> 5.0"
 gem "omniauth-github", "~> 2.0"
-gem "omniauth-rails_csrf_protection", "~> 1.0"
+gem "omniauth-rails_csrf_protection", "~> 2.0"
 
 # Authorization (RBAC)
 gem "pundit", "~> 2.4"
