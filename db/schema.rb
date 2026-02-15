@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_15_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_15_010001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -155,6 +155,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_000001) do
     t.index ["target_domains"], name: "index_agents_on_target_domains", using: :gin
   end
 
+  create_table "ai_model_changes", force: :cascade do |t|
+    t.bigint "ai_model_id", null: false
+    t.string "change_type", null: false
+    t.float "confidence"
+    t.datetime "created_at", null: false
+    t.jsonb "new_values", default: {}
+    t.text "notes"
+    t.jsonb "old_values", default: {}
+    t.boolean "reviewed", default: false
+    t.string "source", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ai_model_id"], name: "index_ai_model_changes_on_ai_model_id"
+    t.index ["change_type"], name: "index_ai_model_changes_on_change_type"
+    t.index ["created_at"], name: "index_ai_model_changes_on_created_at"
+    t.index ["reviewed"], name: "index_ai_model_changes_on_reviewed"
+    t.index ["source"], name: "index_ai_model_changes_on_source"
+  end
+
   create_table "ai_models", force: :cascade do |t|
     t.string "api_model_id"
     t.string "api_reference_url"
@@ -167,11 +185,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_000001) do
     t.integer "context_window"
     t.datetime "created_at", null: false
     t.string "docs_url"
+    t.string "external_id"
     t.string "family"
     t.string "free_tier_description"
     t.string "github_url"
     t.decimal "input_per_1m_tokens", precision: 10, scale: 4
     t.string "key_features", default: [], array: true
+    t.datetime "last_synced_at"
     t.datetime "last_updated_at"
     t.string "limitations", default: [], array: true
     t.integer "max_output_tokens"
@@ -188,8 +208,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_000001) do
     t.boolean "supports_json_mode", default: false
     t.boolean "supports_streaming", default: false
     t.boolean "supports_vision", default: false
+    t.boolean "sync_enabled", default: true
+    t.string "sync_source"
     t.datetime "updated_at", null: false
     t.string "website_url"
+    t.index ["external_id"], name: "index_ai_models_on_external_id"
     t.index ["family"], name: "index_ai_models_on_family"
     t.index ["provider", "family"], name: "index_ai_models_on_provider_and_family"
     t.index ["provider", "name"], name: "index_ai_models_on_provider_and_name"
@@ -197,6 +220,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_000001) do
     t.index ["published"], name: "index_ai_models_on_published"
     t.index ["slug"], name: "index_ai_models_on_slug", unique: true
     t.index ["status"], name: "index_ai_models_on_status"
+    t.index ["sync_enabled"], name: "index_ai_models_on_sync_enabled"
   end
 
   create_table "api_keys", force: :cascade do |t|
@@ -499,6 +523,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_000001) do
   add_foreign_key "agent_tags", "tags"
   add_foreign_key "agent_telemetry_stats", "agents"
   add_foreign_key "agents", "users", column: "claimed_by_user_id"
+  add_foreign_key "ai_model_changes", "ai_models"
   add_foreign_key "api_keys", "users"
   add_foreign_key "certifications", "agents"
   add_foreign_key "claim_requests", "agents"
