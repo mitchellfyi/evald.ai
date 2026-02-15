@@ -74,6 +74,27 @@ class AiModelChangeTest < ActiveSupport::TestCase
     assert_not change.significant_pricing_change? # 10% increase
   end
 
+  test "significant_pricing_change handles zero old prices without division error" do
+    change = build(:ai_model_change,
+                   ai_model: @model,
+                   change_type: "pricing_change",
+                   old_values: { "input_per_1m_tokens" => 0.0, "output_per_1m_tokens" => 0.0 },
+                   new_values: { "input_per_1m_tokens" => 5.0, "output_per_1m_tokens" => 10.0 })
+
+    # Should not raise ZeroDivisionError and should detect as significant
+    assert change.significant_pricing_change?
+  end
+
+  test "significant_pricing_change handles zero old input only" do
+    change = build(:ai_model_change,
+                   ai_model: @model,
+                   change_type: "pricing_change",
+                   old_values: { "input_per_1m_tokens" => 0.0, "output_per_1m_tokens" => 20.0 },
+                   new_values: { "input_per_1m_tokens" => 5.0, "output_per_1m_tokens" => 20.0 })
+
+    assert change.significant_pricing_change? # Free to paid is always significant
+  end
+
   test "summary generates appropriate messages" do
     change = build(:ai_model_change, ai_model: @model, change_type: "created")
     assert_match(/New model added/, change.summary)

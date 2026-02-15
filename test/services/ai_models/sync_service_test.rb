@@ -166,6 +166,151 @@ module AiModels
       assert_equal 0, stats[:updated]
     end
 
+    test "sync_all skips models with sync_enabled false" do
+      existing = create(:ai_model,
+                        external_id: "openai/gpt-4o",
+                        provider: "OpenAI",
+                        input_per_1m_tokens: 5.0,
+                        sync_enabled: false)
+
+      stub_openrouter_response([
+        {
+          "id" => "openai/gpt-4o",
+          "name" => "GPT-4o",
+          "pricing" => { "prompt" => "0.0000025", "completion" => "0.00001" }
+        }
+      ])
+      stub_litellm_response({})
+
+      @service.sync_all
+
+      existing.reload
+      assert_equal 5.0, existing.input_per_1m_tokens.to_f # Not updated
+      assert_equal 1, @service.stats[:skipped]
+    end
+
+    test "quick_sync tracks stats correctly" do
+      existing = create(:ai_model,
+                        external_id: "openai/gpt-4o",
+                        provider: "OpenAI",
+                        input_per_1m_tokens: 5.0,
+                        sync_enabled: true)
+
+      stub_openrouter_response([
+        {
+          "id" => "openai/gpt-4o",
+          "name" => "GPT-4o",
+          "pricing" => { "prompt" => "0.0000025", "completion" => "0.00001" }
+        }
+      ])
+
+      stats = @service.quick_sync
+
+      assert_equal 1, stats[:updated]
+    end
+
+    test "quick_sync respects source priority" do
+      existing = create(:ai_model,
+                        external_id: "openai/gpt-4o",
+                        provider: "OpenAI",
+                        input_per_1m_tokens: 5.0,
+                        sync_source: "openai_api",
+                        sync_enabled: true)
+
+      stub_openrouter_response([
+        {
+          "id" => "openai/gpt-4o",
+          "name" => "GPT-4o",
+          "pricing" => { "prompt" => "0.0000025", "completion" => "0.00001" }
+        }
+      ])
+
+      @service.quick_sync
+
+      existing.reload
+      assert_equal 5.0, existing.input_per_1m_tokens.to_f # Not updated - higher priority source
+      assert_equal 1, @service.stats[:skipped]
+    end
+
+    test "quick_sync skips models with sync_enabled false" do
+      existing = create(:ai_model,
+                        external_id: "openai/gpt-4o",
+                        provider: "OpenAI",
+                        input_per_1m_tokens: 5.0,
+                        sync_enabled: false)
+
+      stub_openrouter_response([
+        {
+          "id" => "openai/gpt-4o",
+          "name" => "GPT-4o",
+          "pricing" => { "prompt" => "0.0000025", "completion" => "0.00001" }
+        }
+      ])
+
+      @service.quick_sync
+
+      existing.reload
+      assert_equal 5.0, existing.input_per_1m_tokens.to_f # Not updated
+    end
+
+    test "sync populates external_id when blank on existing model" do
+      existing = create(:ai_model,
+                        name: "GPT-4o",
+                        slug: "gpt-4o",
+                        provider: "OpenAI",
+                        external_id: nil,
+                        api_model_id: nil,
+                        input_per_1m_tokens: 5.0,
+                        sync_enabled: true)
+
+      stub_openrouter_response([
+        {
+          "id" => "openai/gpt-4o",
+          "name" => "GPT-4o",
+          "pricing" => { "prompt" => "0.0000025", "completion" => "0.00001" }
+        }
+      ])
+      stub_litellm_response({})
+
+      @service.sync_all
+
+      existing.reload
+      assert_equal "openai/gpt-4o", existing.external_id
+      assert_equal "openai/gpt-4o", existing.api_model_id
+    end
+
+    test "create_new_model sets supports_streaming false when explicitly provided" do
+      stub_openrouter_response([
+        {
+          "id" => "openai/gpt-4o-nostream",
+          "name" => "GPT-4o NoStream",
+          "pricing" => { "prompt" => "0.0000025", "completion" => "0.00001" },
+          "supports_streaming" => false
+        }
+      ])
+      stub_litellm_response({})
+
+      # Override stub to include supports_streaming: false
+      Adapters::OpenrouterAdapter.any_instance.stubs(:fetch_models).returns([
+        {
+          external_id: "openai/gpt-4o-nostream",
+          name: "GPT-4o NoStream",
+          provider: "OpenAI",
+          api_model_id: "openai/gpt-4o-nostream",
+          input_per_1m_tokens: 2.5,
+          output_per_1m_tokens: 10.0,
+          supports_streaming: false,
+          status: "active"
+        }
+      ])
+
+      @service.sync_all
+
+      model = AiModel.find_by(external_id: "openai/gpt-4o-nostream")
+      assert_not_nil model
+      assert_equal false, model.supports_streaming
+    end
+
     private
 
     def stub_openrouter_response(models)

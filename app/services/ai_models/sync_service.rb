@@ -39,8 +39,8 @@ module AiModels
     def quick_sync
       logger.info("[AiModels::SyncService] Starting quick sync (pricing only)")
 
-      # Use OpenRouter for quick pricing updates as it's comprehensive
-      adapter = Adapters::OpenrouterAdapter.new(logger: logger)
+      # Use first adapter (OpenRouter by default) for quick pricing updates
+      adapter = adapters.first
       models = adapter.fetch_models
 
       models.each do |model_data|
@@ -100,11 +100,21 @@ module AiModels
     end
 
     def update_existing_model(model, model_data, source:)
+      # Skip models with sync disabled
+      unless model.sync_enabled
+        @stats[:skipped] += 1
+        return
+      end
+
       # Don't overwrite if we have a more authoritative source
       if model.sync_source && source_priority(model.sync_source) > source_priority(source)
         @stats[:skipped] += 1
         return
       end
+
+      # Populate identity fields if blank
+      model.update_columns(external_id: model_data[:external_id]) if model.external_id.blank? && model_data[:external_id].present?
+      model.update_columns(api_model_id: model_data[:api_model_id]) if model.api_model_id.blank? && model_data[:api_model_id].present?
 
       if model.apply_sync_update!(model_data, source: source)
         @stats[:updated] += 1
@@ -132,10 +142,10 @@ module AiModels
         input_per_1m_tokens: model_data[:input_per_1m_tokens],
         output_per_1m_tokens: model_data[:output_per_1m_tokens],
         cached_input_per_1m_tokens: model_data[:cached_input_per_1m_tokens],
-        supports_vision: model_data[:supports_vision] || false,
-        supports_function_calling: model_data[:supports_function_calling] || false,
-        supports_json_mode: model_data[:supports_json_mode] || false,
-        supports_streaming: model_data[:supports_streaming] || true,
+        supports_vision: model_data.key?(:supports_vision) ? model_data[:supports_vision] : false,
+        supports_function_calling: model_data.key?(:supports_function_calling) ? model_data[:supports_function_calling] : false,
+        supports_json_mode: model_data.key?(:supports_json_mode) ? model_data[:supports_json_mode] : false,
+        supports_streaming: model_data.key?(:supports_streaming) ? model_data[:supports_streaming] : true,
         status: model_data[:status] || "active",
         sync_source: source,
         last_synced_at: Time.current,
@@ -158,11 +168,33 @@ module AiModels
 
     def update_pricing_only(model_data, source:)
       model = find_existing_model(model_data)
-      return unless model
+      unless model
+        @stats[:skipped] += 1
+        return
+      end
+
+      # Skip models with sync disabled
+      unless model.sync_enabled
+        @stats[:skipped] += 1
+        return
+      end
+
+      # Don't overwrite if we have a more authoritative source
+      if model.sync_source && source_priority(model.sync_source) > source_priority(source)
+        @stats[:skipped] += 1
+        return
+      end
 
       pricing_data = model_data.slice(:input_per_1m_tokens, :output_per_1m_tokens,
                                        :cached_input_per_1m_tokens, :status)
-      model.apply_sync_update!(pricing_data, source: source)
+      if model.apply_sync_update!(pricing_data, source: source)
+        @stats[:updated] += 1
+      else
+        @stats[:skipped] += 1
+      end
+    rescue StandardError => e
+      logger.error("[AiModels::SyncService] Error in quick sync for #{model_data[:name]}: #{e.message}")
+      @stats[:errors] += 1
     end
 
     def source_priority(source)

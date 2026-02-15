@@ -272,4 +272,37 @@ class AiModelTest < ActiveSupport::TestCase
     change = model.sync_changes.last
     assert_equal 0.75, change.confidence
   end
+
+  test "diff_with detects false values for capability fields" do
+    model = create(:ai_model, supports_vision: true)
+
+    diff = model.diff_with(supports_vision: false)
+
+    assert_equal 1, diff.keys.length
+    assert_equal({ old: true, new: false }, diff["supports_vision"])
+  end
+
+  test "diff_with ignores missing keys" do
+    model = create(:ai_model, supports_vision: true, input_per_1m_tokens: 5.0)
+
+    # Only pass input pricing, not supports_vision
+    diff = model.diff_with(input_per_1m_tokens: 3.0)
+
+    assert_equal 1, diff.keys.length
+    assert diff.key?("input_per_1m_tokens")
+    assert_not diff.key?("supports_vision")
+  end
+
+  test "apply_sync_update! normalizes BigDecimal to Float in change record" do
+    model = create(:ai_model, input_per_1m_tokens: 5.0)
+
+    model.apply_sync_update!(
+      { input_per_1m_tokens: 3.0 },
+      source: "openrouter"
+    )
+
+    change = model.sync_changes.last
+    # Old value should be stored as Float, not BigDecimal string
+    assert_instance_of Float, change.old_values["input_per_1m_tokens"]
+  end
 end

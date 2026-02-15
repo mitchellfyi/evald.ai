@@ -83,7 +83,12 @@ class AiModel < ApplicationRecord
     changes = {}
     SYNCABLE_FIELDS.each do |field|
       current_value = read_attribute(field)
-      new_value = new_data[field.to_sym] || new_data[field]
+
+      # Use key? to distinguish missing keys from explicit false/nil
+      has_key = new_data.key?(field.to_sym) || new_data.key?(field)
+      next unless has_key
+
+      new_value = new_data.key?(field.to_sym) ? new_data[field.to_sym] : new_data[field]
       next if new_value.nil?
 
       # Compare with type coercion for numeric fields
@@ -102,8 +107,8 @@ class AiModel < ApplicationRecord
     diff = diff_with(new_data)
     return false if diff.empty?
 
-    old_values = diff.transform_values { |v| v[:old] }
-    new_values = diff.transform_values { |v| v[:new] }
+    old_values = diff.transform_values { |v| normalize_for_json(v[:old]) }
+    new_values = diff.transform_values { |v| normalize_for_json(v[:new]) }
 
     change_type = determine_change_type(diff)
 
@@ -145,6 +150,15 @@ class AiModel < ApplicationRecord
       "capability_change"
     else
       "updated"
+    end
+  end
+
+  def normalize_for_json(value)
+    case value
+    when BigDecimal
+      value.to_f
+    else
+      value
     end
   end
 end

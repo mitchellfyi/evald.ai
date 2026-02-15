@@ -34,7 +34,7 @@ module AiModels
           conn.options.timeout = 30
           conn.options.open_timeout = 10
           conn.request :json
-          conn.response :json, content_type: /\bjson$/
+          conn.response :json, content_type: /\bjson\b/
           conn.response :raise_error
           conn.adapter Faraday.default_adapter
         end
