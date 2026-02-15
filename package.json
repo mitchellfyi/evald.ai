@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "**The trust score for AI agents.**",
   "main": "index.js",
+  "type": "commonjs",
   "directories": {
     "doc": "docs",
     "lib": "lib",
@@ -18,11 +19,15 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/mitchellfyi/evald.ai/issues"
   },
   "homepage": "https://github.com/mitchellfyi/evald.ai#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "packageManager": "npm@10.8.2",
   "dependencies": {
     "@doyaken/doyaken": "^0.1.16"
   }
