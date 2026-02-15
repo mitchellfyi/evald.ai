@@ -43,13 +43,18 @@ jobs:
             for (const run of runs.workflow_runs) {
               // Only approve runs from Copilot or known bot accounts
               const trustedActors = [
-                'copilot-swe-agent[bot]',
-                'github-actions[bot]',
-                'dependabot[bot]'
+                'Copilot',
+                'copilot',
+                'copilot-swe-agent',
+                'github-actions',
+                'dependabot'
               ];
               
               const actorLogin = run.actor?.login || '';
-              const isTrusted = trustedActors.some(a => actorLogin.includes(a.replace('[bot]', '')));
+              const isTrusted = trustedActors.some(a => 
+                actorLogin.toLowerCase() === a.toLowerCase() ||
+                actorLogin.toLowerCase().includes(a.toLowerCase())
+              );
               
               if (isTrusted) {
                 try {
