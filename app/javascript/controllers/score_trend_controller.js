@@ -127,7 +127,13 @@ export default class extends Controller {
     }
 
     const { icon, class: colorClass, label } = config[trend] || config.stable
-    indicator.innerHTML = `<span class="${colorClass} font-medium">${icon} ${label}</span>`
+
+    // Use DOM manipulation instead of innerHTML to prevent XSS
+    const span = document.createElement("span")
+    span.className = `${colorClass} font-medium`
+    span.textContent = `${icon} ${label}`
+
+    indicator.replaceChildren(span)
     indicator.classList.remove("hidden")
   }
 
