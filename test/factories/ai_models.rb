@@ -7,6 +7,7 @@ FactoryBot.define do
     provider { "OpenAI" }
     published { true }
     status { "active" }
+    sync_enabled { true }
 
     trait :with_pricing do
       input_per_1m_tokens { 3.0 }
@@ -36,6 +37,21 @@ FactoryBot.define do
 
     trait :google do
       provider { "Google" }
+    end
+
+    trait :synced do
+      last_synced_at { 1.hour.ago }
+      sync_source { "openrouter" }
+      sequence(:external_id) { |n| "openai/model-#{n}" }
+    end
+
+    trait :stale do
+      last_synced_at { 2.days.ago }
+    end
+
+    trait :never_synced do
+      last_synced_at { nil }
+      sync_source { nil }
     end
   end
 end
