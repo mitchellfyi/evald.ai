@@ -82,7 +82,7 @@ class AiModel < ApplicationRecord
   def diff_with(new_data)
     changes = {}
     SYNCABLE_FIELDS.each do |field|
-      current_value = send(field)
+      current_value = read_attribute(field)
       new_value = new_data[field.to_sym] || new_data[field]
       next if new_value.nil?
 
@@ -109,7 +109,7 @@ class AiModel < ApplicationRecord
 
     transaction do
       diff.each do |field, values|
-        send("#{field}=", values[:new])
+        write_attribute(field, values[:new])
       end
       self.last_synced_at = Time.current
       self.sync_source = source
