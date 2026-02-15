@@ -27,8 +27,8 @@ class AiModelChange < ApplicationRecord
 
     return false unless old_input && new_input && old_output && new_output
 
-    input_change = ((new_input - old_input) / old_input).abs
-    output_change = ((new_output - old_output) / old_output).abs
+    input_change = old_input.positive? ? ((new_input - old_input) / old_input).abs : Float::INFINITY
+    output_change = old_output.positive? ? ((new_output - old_output) / old_output).abs : Float::INFINITY
 
     input_change > 0.2 || output_change > 0.2
   end

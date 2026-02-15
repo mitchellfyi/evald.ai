@@ -208,11 +208,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_15_010001) do
     t.boolean "supports_json_mode", default: false
     t.boolean "supports_streaming", default: false
     t.boolean "supports_vision", default: false
-    t.boolean "sync_enabled", default: true
+    t.boolean "sync_enabled", default: true, null: false
     t.string "sync_source"
     t.datetime "updated_at", null: false
     t.string "website_url"
-    t.index ["external_id"], name: "index_ai_models_on_external_id"
+    t.index ["external_id"], name: "index_ai_models_on_external_id", unique: true
     t.index ["family"], name: "index_ai_models_on_family"
     t.index ["provider", "family"], name: "index_ai_models_on_provider_and_family"
     t.index ["provider", "name"], name: "index_ai_models_on_provider_and_name"
