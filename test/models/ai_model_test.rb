@@ -157,4 +157,119 @@ class AiModelTest < ActiveSupport::TestCase
     model = build(:ai_model, max_output_tokens: 0)
     assert_not model.valid?
   end
+
+  # Sync-related tests
+
+  test "has_many sync_changes" do
+    model = create(:ai_model)
+    change = create(:ai_model_change, ai_model: model)
+    assert_includes model.sync_changes, change
+  end
+
+  test "syncable scope returns models with sync_enabled" do
+    syncable = create(:ai_model, sync_enabled: true)
+    create(:ai_model, sync_enabled: false)
+    assert_includes AiModel.syncable, syncable
+  end
+
+  test "stale scope returns models not synced recently" do
+    stale = create(:ai_model, last_synced_at: 2.days.ago)
+    fresh = create(:ai_model, last_synced_at: 1.hour.ago)
+    never_synced = create(:ai_model, last_synced_at: nil)
+
+    assert_includes AiModel.stale(24), stale
+    assert_includes AiModel.stale(24), never_synced
+    assert_not_includes AiModel.stale(24), fresh
+  end
+
+  test "diff_with returns changed fields" do
+    model = create(:ai_model, input_per_1m_tokens: 5.0, output_per_1m_tokens: 10.0)
+
+    diff = model.diff_with(input_per_1m_tokens: 3.0, output_per_1m_tokens: 10.0)
+
+    assert_equal 1, diff.keys.length
+    assert_equal({ old: BigDecimal("5.0"), new: 3.0 }, diff["input_per_1m_tokens"])
+  end
+
+  test "diff_with ignores nil values in new data" do
+    model = create(:ai_model, input_per_1m_tokens: 5.0)
+
+    diff = model.diff_with(input_per_1m_tokens: nil)
+
+    assert_empty diff
+  end
+
+  test "diff_with handles string and symbol keys" do
+    model = create(:ai_model, input_per_1m_tokens: 5.0)
+
+    diff1 = model.diff_with(input_per_1m_tokens: 3.0)
+    diff2 = model.diff_with("input_per_1m_tokens" => 3.0)
+
+    assert_equal 1, diff1.keys.length
+    assert_equal 1, diff2.keys.length
+  end
+
+  test "apply_sync_update! updates model and creates change record" do
+    model = create(:ai_model, input_per_1m_tokens: 5.0, output_per_1m_tokens: 10.0)
+
+    assert_difference "AiModelChange.count", 1 do
+      result = model.apply_sync_update!(
+        { input_per_1m_tokens: 3.0 },
+        source: "openrouter"
+      )
+      assert result
+    end
+
+    model.reload
+    assert_equal 3.0, model.input_per_1m_tokens.to_f
+    assert_not_nil model.last_synced_at
+    assert_equal "openrouter", model.sync_source
+
+    change = model.sync_changes.last
+    assert_equal "pricing_change", change.change_type
+    assert_equal "openrouter", change.source
+  end
+
+  test "apply_sync_update! returns false when no changes" do
+    model = create(:ai_model, input_per_1m_tokens: 5.0)
+
+    assert_no_difference "AiModelChange.count" do
+      result = model.apply_sync_update!(
+        { input_per_1m_tokens: 5.0 },
+        source: "openrouter"
+      )
+      assert_not result
+    end
+  end
+
+  test "apply_sync_update! sets correct change_type for deprecation" do
+    model = create(:ai_model, status: "active")
+
+    model.apply_sync_update!({ status: "deprecated" }, source: "manual")
+
+    change = model.sync_changes.last
+    assert_equal "deprecated", change.change_type
+  end
+
+  test "apply_sync_update! sets correct change_type for capability changes" do
+    model = create(:ai_model, supports_vision: false)
+
+    model.apply_sync_update!({ supports_vision: true }, source: "manual")
+
+    change = model.sync_changes.last
+    assert_equal "capability_change", change.change_type
+  end
+
+  test "apply_sync_update! stores confidence for AI-extracted data" do
+    model = create(:ai_model, input_per_1m_tokens: 5.0)
+
+    model.apply_sync_update!(
+      { input_per_1m_tokens: 3.0 },
+      source: "ai_extracted",
+      confidence: 0.75
+    )
+
+    change = model.sync_changes.last
+    assert_equal 0.75, change.confidence
+  end
 end
