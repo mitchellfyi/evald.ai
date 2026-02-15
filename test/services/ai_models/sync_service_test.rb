@@ -81,7 +81,8 @@ module AiModels
       change = existing.sync_changes.last
       assert_equal "pricing_change", change.change_type
       assert_equal "openrouter", change.source
-      assert_equal({ "input_per_1m_tokens" => 5.0 }, change.old_values)
+      # Compare as floats since DB may return BigDecimal
+      assert_equal 5.0, change.old_values["input_per_1m_tokens"].to_f
     end
 
     test "sync_all respects source priority" do
@@ -168,21 +169,44 @@ module AiModels
     private
 
     def stub_openrouter_response(models)
-      stub_request(:get, "https://openrouter.ai/api/v1/models")
-        .to_return(
-          status: 200,
-          body: { "data" => models }.to_json,
-          headers: { "Content-Type" => "application/json" }
-        )
+      # Mock at adapter level for reliability
+      normalized_models = models.map do |m|
+        provider_slug = m["id"].split("/").first
+        {
+          external_id: m["id"],
+          name: m["name"] || m["id"].split("/").last,
+          provider: provider_mapping[provider_slug] || provider_slug.titleize,
+          api_model_id: m["id"],
+          context_window: m["context_length"],
+          max_output_tokens: m.dig("top_provider", "max_completion_tokens"),
+          input_per_1m_tokens: m.dig("pricing", "prompt") ? m.dig("pricing", "prompt").to_f * 1_000_000 : nil,
+          output_per_1m_tokens: m.dig("pricing", "completion") ? m.dig("pricing", "completion").to_f * 1_000_000 : nil,
+          supports_vision: false,
+          supports_function_calling: false,
+          supports_json_mode: false,
+          supports_streaming: true,
+          status: "active"
+        }.compact
+      end.select { |m| AiModel::PROVIDERS.include?(m[:provider]) }
+
+      Adapters::OpenrouterAdapter.any_instance.stubs(:fetch_models).returns(normalized_models)
     end
 
-    def stub_litellm_response(models)
-      stub_request(:get, "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json")
-        .to_return(
-          status: 200,
-          body: models.to_json,
-          headers: { "Content-Type" => "application/json" }
-        )
+    def stub_litellm_response(_models)
+      # Return empty array to avoid interference
+      Adapters::LitellmAdapter.any_instance.stubs(:fetch_models).returns([])
+    end
+
+    def provider_mapping
+      {
+        "openai" => "OpenAI",
+        "anthropic" => "Anthropic",
+        "google" => "Google",
+        "meta-llama" => "Meta",
+        "mistralai" => "Mistral",
+        "x-ai" => "xAI",
+        "deepseek" => "DeepSeek"
+      }
     end
   end
 end

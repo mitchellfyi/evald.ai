@@ -40,3 +40,7 @@ Metrics/MethodLength:
 # Disable template existence check - false positives in CI
 GitHub/RailsControllerRenderPathsExist:
   Enabled: false
+
+# Disable PredicateMethod - existing codebase has methods like should_notify? which are fine
+Naming/PredicateMethod:
+  Enabled: false

@@ -4,7 +4,9 @@ require "test_helper"
 
 class AiModelsSyncJobTest < ActiveSupport::TestCase
   def setup
-    stub_external_apis
+    # Mock at adapter level for reliability
+    AiModels::Adapters::OpenrouterAdapter.any_instance.stubs(:fetch_models).returns([])
+    AiModels::Adapters::LitellmAdapter.any_instance.stubs(:fetch_models).returns([])
   end
 
   test "performs full sync by default" do
@@ -27,23 +29,5 @@ class AiModelsSyncJobTest < ActiveSupport::TestCase
 
   test "job is enqueued to default queue" do
     assert_equal "default", AiModelsSyncJob.new.queue_name
-  end
-
-  private
-
-  def stub_external_apis
-    stub_request(:get, "https://openrouter.ai/api/v1/models")
-      .to_return(
-        status: 200,
-        body: { "data" => [] }.to_json,
-        headers: { "Content-Type" => "application/json" }
-      )
-
-    stub_request(:get, "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json")
-      .to_return(
-        status: 200,
-        body: {}.to_json,
-        headers: { "Content-Type" => "application/json" }
-      )
   end
 end
